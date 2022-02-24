@@ -1,0 +1,19 @@
+name: 'André Victor Ribeiro Amaral'
+output_dir: 'docs'
+navbar:
+  title: 'Exercises in Linear Models'
+  left:
+    - text: 'Case Study 01'
+      href: case_study_01.html
+    - text: 'Case Study 02'
+      href: case_study_02.html
+    - text: 'Case Study 03'
+      href: case_study_03.html
+    - text: 'Case Study 04'
+      href: case_study_04.html
+  right:
+    - icon: fa-globe
+      href: https://avramaral.github.io/
+output:
+  html_document:
+    css: style.css
