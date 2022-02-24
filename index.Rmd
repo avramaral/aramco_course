@@ -1,5 +1,6 @@
 ---
 title: 'Exercises in Linear Models'
+author: 'André Victor Ribeiro Amaral'
 ---
 
-This page provides auxiliary material for the course on Linear Models related topics, by [Dr. Paula Moraga](https://www.paulamoraga.com/). Here, we will go through four different case studies, which can be accessed in the above tabs.
+This page provides auxiliary material for the course, given by [Dr. Paula Moraga](https://www.paulamoraga.com/), on Linear Models related topics. Here, we will go through four different case studies, which can be accessed in the above tabs.
