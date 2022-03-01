@@ -219,7 +219,7 @@ unknown <- car2[is.na(car2$mpg), ]
 car2[is.na(car2$mpg), 'mpg'] <- predicted_values
 
 pch <- rep(19, nrow(car2)); pch[pos_unk] <- 9
-plot(mpg ~ hp, pch = pch, col = (as.numeric(year) + 1), data = car3)
+plot(mpg ~ hp, pch = pch, col = (as.numeric(year) + 1), data = car2)
 curve(transfData_back(coeffi[[1]] + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 2)
 curve(transfData_back((coeffi[[1]] + coeffi[[3]]) + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 3)
 legend('topright', c('old', 'new'), col = unique(as.numeric(car3$year) + 1), pch = 19)
