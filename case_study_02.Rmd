@@ -1,5 +1,5 @@
 ---
-title: 'Case Study 01'
+title: 'Case Study 02'
 author: 'André Victor Ribeiro Amaral'
 output:
   html_document:
@@ -48,6 +48,7 @@ Once we have the data, we can do a few plots that might help us understanding ou
 boxplot(hardness ~ sand, data = hardness)
 boxplot(hardness ~ carbon, data = hardness)
 ```
+
 From both plots, it seems like there is a difference in one of the treatments (low doses for both sand and carbon) regarding the hardness of the material. However, we should only analyse the two factors separately if we can conclude that there is no interaction between them, meaning that there is no partial effect of one factor over the other. To see this, let's use the `interaction.plot()` function to explore the possible interactions between the factors.
 
 ```{r}
