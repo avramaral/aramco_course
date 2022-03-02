@@ -1,5 +1,5 @@
 ---
-title: 'Case Study 02'
+title: 'Case Study 01'
 author: 'André Victor Ribeiro Amaral'
 output:
   html_document:
@@ -10,218 +10,105 @@ output:
 
 # Introduction
 
-For this problem, we will analyse data about the mileage per gallon performances of various cars. The data set was retrieved from [this page](https://archive.ics.uci.edu/ml/datasets/Auto+MPG) (with changes). You can download the `.csv` file [here](./datasets/car.csv).
+For this problem, we will study how the amount of carbon fiber and sand additions affect the hardness of a certain material. You can download the `.csv` file [here](./datasets/hardness.csv).
 
-This data set contains following the attributes:
+This data set contains following the variables:
 
-1. `mpg` (continuous)
-2. `cylinders` (multi-valued discrete)
-3. `displacement` (continuous)
-4. `horsepower` (continuous)
-5. `weight` (continuous)
-6. `accelaration` (continuous)
-7. `model year` (multi-valued discrete)
-8. `origin` (multi-valued discrete)
+1. `sand` (multi-valued discrete)
+2. `carbon` (multi-valued discrete)
+2. `hardness` (continuous)
 
 # Exploring the data set
 
 In order to explore the data set and perform initial analyses, we have to read it (with `R`) first. Provided that the `.csv` file is saved within the `datasets/` folder, one can read the file in the following way.
 
 ```{r}
-col.names <- c('mpg', 'cylinders', 'displacement', 'hp', 'weight', 'acceleration', 'year', 'origin')
-car <- read.csv(file = 'datasets/car.csv', header = FALSE, sep = ',', col.names = col.names)
-head(car, 5)
+col.names <- c('sand', 'carbon', 'hardness')
+hardness <- read.csv(file = 'datasets/hardness.csv', header = FALSE, sep = ',', col.names = col.names)
+head(hardness, 5)
 ```
 
 Now, let's see a summary of our data.
 
 ```{r}
-summary(car)
+summary(hardness)
 ```
 
-As one can see from the above table, some multi-valued discrete attributes are being interpreted as integer values; also, we have `NA`'s for the `mpg` and `horsepower` attributes. To verify (and change) the variable types, we can do the following
+As one can see from the above table, the multi-valued discrete attributes are being interpreted as numeric; however, we should set them as factor. For changing them, we can do the following
 
 ```{r}
-car$cylinders <- as.factor(car$cylinders)
-car$year      <- as.factor(car$year)
-car$origin    <- as.factor(car$origin)
+hardness$sand <- factor(hardness$sand, levels = c(0, 15, 30), labels = c('lowS', 'medS', 'highS'))
+hardness$carbon <- factor(hardness$carbon, levels = c(0.00, 0.25, 0.50), labels = c('lowC', 'medC', 'highC'))
+summary(hardness)
 ```
 
-Also, as there are too many classes for the `year`, and as a way to make our analyses simpler, let's categorize the cars into `old` and `new`, such that cars from before `77` will be labeled as `1` and the remaining cars will be labeled as `2`.
-```{r}
-car$year <- as.factor(sapply(X = car$year, FUN = function (item) { ifelse(item %in% 70:76, 1, 2) }))
+Once we have the data, we can do a few plots that might help us understanding our problem. We can start by doing two different boxplots for the two categorical variables.
 
-summary(car)
+```{r}
+boxplot(hardness ~ sand, data = hardness)
+boxplot(hardness ~ carbon, data = hardness)
+```
+From both plots, it seems like there is a difference in one of the treatments (low doses for both sand and carbon) regarding the hardness of the material. However, we should only analyse the two factors separately if we can conclude that there is no interaction between them, meaning that there is no partial effect of one factor over the other. To see this, let's use the `interaction.plot()` function to explore the possible interactions between the factors.
+
+```{r}
+interaction.plot(x.factor = hardness$sand, trace.factor = hardness$carbon, response = hardness$hardness)
+interaction.plot(x.factor = hardness$carbon, trace.factor = hardness$sand, response = hardness$hardness)
 ```
 
-Now, let's deal with the missing values. Different approaches could have been taken here, and they highly depend on your problem (and your knowledge about the problem). For this particular example, suppose that we want to describe the `mpg` data as a function of the `hp` and `year`. Since we do not now much about this data, a simpler options would be to exclude the instances with missing values for the `hp`. Let's do this.
-```{r}
-car2 <- car[!is.na(car$hp), c('mpg', 'hp', 'year')]
+From the both plots above, the interactions (if any) do not seem to be important (since the lines are, more or less, parallel). As an important side note, if there is **no** interaction, the main effects (if significant) will tell us if there is variation among the levels of the factor in question; however, if modeled with interaction, the main effects may be difficult to be correctly explored and should be avoided. In this case, one may simply consider all pairs of levels as separate treatments.
 
-summary(car2)
-```
-Given this smaller data set, our goal might be to predict the missing values for `mpg`. However, to do this, we have to have a data set with no `NA`'s. Let's name it `car3`.
-```{r}
-car3 <- car2[!is.na(car2$mpg), ]
-```
-As a last exploration step, let's plot our data set.
-```{r}
-plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-legend('topright', c('old', 'new'), col = unique(as.numeric(car3$year) + 1), pch = 19)
-```
 
 # Fitting a model
 
-From the previous plot, although we suspect that a linear model might not be appropriate for this data set as it is, let's fit it and analyse the results. 
-
-In particular, we will fit the following model
-
-$$
-\texttt{mpg}_i = \beta_0 + \texttt{hp}_i \cdot \beta_1 + \epsilon_i; \text{ such that } \epsilon_i \overset{\text{i.i.d.}}{\sim} \text{Normal}(0, \sigma^2_{\epsilon})
-$$
+So let's start by fitting our complete model.
 
 ```{r}
-model <- lm(formula = mpg ~ hp, data = car3)
-summary(model)
+model <- lm(formula = hardness ~ sand * carbon, data = hardness)
+anova(model)
 ```
 
-From the above summary, we have strong evidences that both $\beta_0$ and $\beta_1$ are different than 0. The residuals do not seem symmetric, though. Also, $\text{R}^2 =$ `r summary(model)$r.squared`. Now, let's plot the fitted model. 
+As we can see from the above table (and p-values), we **reject** the hypothesis "sand have no significant effect on hardness", we reject the hypothesis "carbon have no significant effect on hardness", as we **fail to reject** the hypothesis "sand and carbon interaction have no significant on hardness". Thus, we can fit the following simplified model
 
 ```{r}
-plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-abline(model)
-legend('topright', c('old', 'new'), col = unique(as.numeric(car3$year) + 1), pch = 19)
+model2 <- lm(formula = hardness ~ sand + carbon, data = hardness)
+anova(model2)
 ```
 
-However, notice that the relation between `hp` and `mpg` does not seem to be linear, and the `age` might also provide information when describe the response variable. Thus, before taking any conclusions from the fitted model, let's do an analysis of residuals. We will focus on the "Residuals vs Fitted" and "Normal Q-Q" plots.
+Now, as [before](./case_study_01.html), we can compute the estimated means and effects for sand and carbon from `hardness ~ sand + carbon`.
 
 ```{r}
-plot(model, which = c(1, 2))
+modAOV <- aov(formula = hardness ~ sand + carbon, data = hardness)
+model.tables(modAOV, 'means')
+
+# Effects
+model.tables(modAOV)
 ```
 
-From the "Residuals vs Fitted" plots, we may see that a linear relationship does not correctly describe how `mpg` is written as a function of `hp`, since we can see a pattern for the residuals (as opposed to a "well spread and random" cloud of points around $y = 0$). Also, from the "Normal Q-Q" plot, the residuals seem to be normally distributed (we will test it). 
-
-To confirm these visual analyses, let's conduct a proper test. To check for the assumption of equal variance, since we have a quantitative regressor, we can use the Score Test, available in the `car` package through the `ncvTest()` function. Also, to check for the normality of the residuals, we will use the Shapiro-Wilk test (`shapiro.test()`).
-
-```{r}
-library('car')
-ncvTest(model)
-shapiro.test(resid(model))
-```
-
-As the p-values are too small for the first test, we have strong evidences against equal variance. On the other hand, we fail to reject the hypothesis of normally distributed residuals (with a significance level of $5\%$). Thus, as at least one assumption for this model does not hold, the results might not be reliable.
-
-As a way to overcome this issue, we will transform the data according to the following rule
-
-$$ 
-w(\lambda) = 
-\begin{cases}
-  (y^{\lambda} - 1)/\lambda &, \text{ if } \lambda \neq 0 \\
-  \log(y) &, \text{ if } \lambda = 0.
-\end{cases}
-$$
-
-This can be achieved by using the `boxCox()` function from the `car` package. Based on it, we will retrieve the value of `lambda` and will apply the above transformation.
-
-```{r}
-bc <- boxCox(model)
-
-(lambda <- bc$x[which.max(bc$y)])
-```
-
-Now, let's create a function to transform our data based on the value of $\lambda$ and based on the above rule. We will name it `tranfData()`. Also, we will create a function to transform our data back to the original scale. We will name it `tranfData_back()`. This second function, if $\lambda = 0$, will be given by $y(\lambda) = (w\lambda + 1)^{1/\lambda}$.
-
-```{r}
-transfData <- function (data, lambda) { ((data ^ lambda - 1) / lambda) }
-transfData_back <- function (data, lambda) { ((data * lambda + 1) ^ (1 / lambda)) }
-```
-
-Therefore, we can easily transform our data, given $\lambda =$ `r round(lambda, 2)`, in the following way
-
-```{r}
-car3$mpg_transf <- sapply(X = car3$mpg, FUN = transfData, lambda = lambda)
-head(car3, 5)
-plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-legend('topright', c('old', 'new'), col = unique(as.numeric(car3$year) + 1), pch = 19)
-```
-
-Finally, we can fit again a linear model for the transformed data.
-
-```{r}
-model2 <- lm(formula = mpg_transf ~ hp, data = car3)
-summary(model2)
-
-plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-abline(model2)
-legend('topright', c('old', 'new'), col = unique(as.numeric(car3$year) + 1), pch = 19)
-```
-
-Also, we can analyse the diagnostic plots, as before. As well as conduct the appropriate tests.
+Next, let's do a residual analysis, so that we can make sure that our assumptions hold. We will plot the "Residuals vs. Fitted" and "Normal Q-Q" graphs, and conduct the appropriate tests, namely, `ncvTest()` (notice it is not the same as `leveneTest()`) and `shapiro.test()` (for `resid()`), for the equal variance and normally distributed residuals assumptions, respectively.
 
 ```{r}
 plot(model2, which = c(1, 2))
+
+library('car')
 ncvTest(model2)
 shapiro.test(resid(model2))
 ```
 
-As we would expect, the results look much better now. However, we can still use information about `year`, which seems to play a role in explaining the response variable. That being said, let's fit this new model.
+As the p-values are large for both tests, the assumptions seem to hold. Also, the plots allow us to conclude the same. Therefore, `model2` might correctly model our problem.
+
+Also, as [before](./case_study_01.html), we can also do a pairwise analysis.
 
 ```{r}
-model3 <- lm(formula = mpg_transf ~ hp * year, data = car3)
-summary(model3)
-```
-
-From the above table, we can see that the interaction (`hp:year2`) is not significant; therefore, we can fit a simpler model.
-```{r}
-model4 <- lm(formula = mpg_transf ~ hp + year, data = car3)
-coeffi <- model4$coefficients
-summary(model4)
-
-plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-abline(coeffi[[1]], coeffi[[2]], col = 2)
-abline(coeffi[[1]] + coeffi[[3]], coeffi[[2]], col = 3)
-legend('topright', c('old', 'new'), col = unique(as.numeric(car3$year) + 1), pch = 19)
-```
-
-Again, we can analyse the diagnostic plots and conduct the appropriate tests.
-
-```{r}
-plot(model4, which = c(1, 2))
-ncvTest(model4)
-shapiro.test(resid(model4))
-```
-Thus, for a significance level of $5\%$ we fail to reject the hypotheses of equal variance and normality. Meaning that this might be an appropriate model for our data. However, recall that we are modelling a transformed data set. We can get a model for our original data by doing the following. For a transformation $f$, we have the 
-
-
-\begin{align*}
-\texttt{mpg}_i &= f^{-1}(`r round(coeffi[[1]], 3)` `r round(coeffi[[2]], 3)`\texttt{hp}_i)&, \text{ if } \texttt{year} = 1 \\
-\texttt{mpg}_i &= f^{-1}((`r round(coeffi[[1]], 3)` + `r round(coeffi[[3]], 3)`) `r round(coeffi[[2]], 3)`\texttt{hp}_i)&, \text{ if } \texttt{year} = 2
-\end{align*}
-
-
-And we can plot it in the following way
-
-```{r}
-plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-curve(transfData_back(coeffi[[1]] + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 2)
-curve(transfData_back((coeffi[[1]] + coeffi[[3]]) + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 3)
-legend('topright', c('old', 'new'), col = unique(as.numeric(car3$year) + 1), pch = 19)
+(modTuk <- TukeyHSD(modAOV))
+plot(modTuk)
 ```
 
 # Predicting unknown values
 
-Now that we have a "good" fitted model, we can predict, as suggested before, the values of `mpg` for which we had `NA`'s before. We can do this in the following way
+Finally, the predicted values for each combination of level of `sand` and `carbon` can be computed using the `predict()` function.
+
 ```{r}
-pos_unk <- which(is.na(car2$mpg))
-unknown <- car2[is.na(car2$mpg), ]
-
-(predicted_values <- sapply(X = predict(object = model4, newdata = data.frame(hp = unknown$hp, year = unknown$year)), FUN = transfData_back, lambda = lambda))
-car2[is.na(car2$mpg), 'mpg'] <- predicted_values
-
-pch <- rep(19, nrow(car2)); pch[pos_unk] <- 9
-plot(mpg ~ hp, pch = pch, col = (as.numeric(year) + 1), data = car2)
-curve(transfData_back(coeffi[[1]] + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 2)
-curve(transfData_back((coeffi[[1]] + coeffi[[3]]) + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 3)
-legend('topright', c('old', 'new'), col = unique(as.numeric(car3$year) + 1), pch = 19)
-
+(newdata <- data.frame(sand = factor(rep(c('lowS', 'medS', 'highS'), each = 3)), carbon = factor(rep(c('lowC', 'medC', 'highC'), times = 3))))
+newdata$predict <- predict(model2, newdata = newdata)
+newdata
 ```

@@ -12,7 +12,7 @@
 <meta name="author" content="André Victor Ribeiro Amaral" />
 
 
-<title>Case Study 02</title>
+<title>Case Study 01</title>
 
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -336,6 +336,9 @@ div.tocify {
 <li>
   <a href="case_study_05.html">Case Study 05</a>
 </li>
+<li>
+  <a href="case_study_06.html">Case Study 06</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -353,7 +356,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Case Study 02</h1>
+<h1 class="title toc-ignore">Case Study 01</h1>
 <h4 class="author">André Victor Ribeiro Amaral</h4>
 
 </div>
@@ -361,301 +364,176 @@ div.tocify {
 
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>For this problem, we will analyse data about the mileage per gallon performances of various cars. The data set was retrieved from <a href="https://archive.ics.uci.edu/ml/datasets/Auto+MPG">this page</a> (with changes). You can download the <code>.csv</code> file <a href="./datasets/car.csv">here</a>.</p>
-<p>This data set contains following the attributes:</p>
+<p>For this problem, we will study how the amount of carbon fiber and sand additions affect the hardness of a certain material. You can download the <code>.csv</code> file <a href="./datasets/hardness.csv">here</a>.</p>
+<p>This data set contains following the variables:</p>
 <ol style="list-style-type: decimal">
-<li><code>mpg</code> (continuous)</li>
-<li><code>cylinders</code> (multi-valued discrete)</li>
-<li><code>displacement</code> (continuous)</li>
-<li><code>horsepower</code> (continuous)</li>
-<li><code>weight</code> (continuous)</li>
-<li><code>accelaration</code> (continuous)</li>
-<li><code>model year</code> (multi-valued discrete)</li>
-<li><code>origin</code> (multi-valued discrete)</li>
+<li><code>sand</code> (multi-valued discrete)</li>
+<li><code>carbon</code> (multi-valued discrete)</li>
+<li><code>hardness</code> (continuous)</li>
 </ol>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Exploring the data set</h1>
 <p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
-<pre class="r"><code>col.names &lt;- c(&#39;mpg&#39;, &#39;cylinders&#39;, &#39;displacement&#39;, &#39;hp&#39;, &#39;weight&#39;, &#39;acceleration&#39;, &#39;year&#39;, &#39;origin&#39;)
-car &lt;- read.csv(file = &#39;datasets/car.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
-head(car, 5)</code></pre>
-<pre><code>##   mpg cylinders displacement  hp weight acceleration year origin
-## 1  18         8          307 130   3504         12.0   70      1
-## 2  16         8          304 150   3433         12.0   70      1
-## 3  17         8          302 140   3449         10.5   70      1
-## 4  NA         8          350 165   4142         11.5   70      1
-## 5  NA         8          351 153   4034         11.0   70      1</code></pre>
+<pre class="r"><code>col.names &lt;- c(&#39;sand&#39;, &#39;carbon&#39;, &#39;hardness&#39;)
+hardness &lt;- read.csv(file = &#39;datasets/hardness.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
+head(hardness, 5)</code></pre>
+<pre><code>##   sand carbon hardness
+## 1    0      0       61
+## 2    0      0       63
+## 3   15      0       67
+## 4   15      0       69
+## 5   30      0       65</code></pre>
 <p>Now, let’s see a summary of our data.</p>
-<pre class="r"><code>summary(car)</code></pre>
-<pre><code>##       mpg          cylinders      displacement         hp            weight    
-##  Min.   :12.00   Min.   :3.000   Min.   : 68.0   Min.   : 48.0   Min.   :1613  
-##  1st Qu.:18.00   1st Qu.:4.000   1st Qu.:107.0   1st Qu.: 77.5   1st Qu.:2237  
-##  Median :23.00   Median :4.000   Median :148.5   Median : 92.0   Median :2804  
-##  Mean   :23.74   Mean   :5.372   Mean   :187.9   Mean   :100.9   Mean   :2936  
-##  3rd Qu.:29.80   3rd Qu.:6.000   3rd Qu.:250.0   3rd Qu.:113.5   3rd Qu.:3456  
-##  Max.   :39.00   Max.   :8.000   Max.   :400.0   Max.   :190.0   Max.   :4746  
-##  NA&#39;s   :6                                       NA&#39;s   :2                     
-##   acceleration        year           origin     
-##  Min.   : 8.00   Min.   :70.00   Min.   :1.000  
-##  1st Qu.:14.00   1st Qu.:73.00   1st Qu.:1.000  
-##  Median :15.50   Median :76.00   Median :1.000  
-##  Mean   :15.58   Mean   :76.36   Mean   :1.558  
-##  3rd Qu.:17.00   3rd Qu.:79.75   3rd Qu.:2.000  
-##  Max.   :23.50   Max.   :82.00   Max.   :3.000  
-## </code></pre>
-<p>As one can see from the above table, some multi-valued discrete attributes are being interpreted as integer values; also, we have <code>NA</code>’s for the <code>mpg</code> and <code>horsepower</code> attributes. To verify (and change) the variable types, we can do the following</p>
-<pre class="r"><code>car$cylinders &lt;- as.factor(car$cylinders)
-car$year      &lt;- as.factor(car$year)
-car$origin    &lt;- as.factor(car$origin)</code></pre>
-<p>Also, as there are too many classes for the <code>year</code>, and as a way to make our analyses simpler, let’s categorize the cars into <code>old</code> and <code>new</code>, such that cars from before <code>77</code> will be labeled as <code>1</code> and the remaining cars will be labeled as <code>2</code>.</p>
-<pre class="r"><code>car$year &lt;- as.factor(sapply(X = car$year, FUN = function (item) { ifelse(item %in% 70:76, 1, 2) }))
-
-summary(car)</code></pre>
-<pre><code>##       mpg        cylinders  displacement         hp            weight    
-##  Min.   :12.00   3:  3     Min.   : 68.0   Min.   : 48.0   Min.   :1613  
-##  1st Qu.:18.00   4:134     1st Qu.:107.0   1st Qu.: 77.5   1st Qu.:2237  
-##  Median :23.00   5:  1     Median :148.5   Median : 92.0   Median :2804  
-##  Mean   :23.74   6: 62     Mean   :187.9   Mean   :100.9   Mean   :2936  
-##  3rd Qu.:29.80   8: 58     3rd Qu.:250.0   3rd Qu.:113.5   3rd Qu.:3456  
-##  Max.   :39.00             Max.   :400.0   Max.   :190.0   Max.   :4746  
-##  NA&#39;s   :6                                 NA&#39;s   :2                     
-##   acceleration   year    origin 
-##  Min.   : 8.00   1:132   1:167  
-##  1st Qu.:14.00   2:126   2: 38  
-##  Median :15.50           3: 53  
-##  Mean   :15.58                  
-##  3rd Qu.:17.00                  
-##  Max.   :23.50                  
-## </code></pre>
-<p>Now, let’s deal with the missing values. Different approaches could have been taken here, and they highly depend on your problem (and your knowledge about the problem). For this particular example, suppose that we want to describe the <code>mpg</code> data as a function of the <code>hp</code> and <code>year</code>. Since we do not now much about this data, a simpler options would be to exclude the instances with missing values for the <code>hp</code>. Let’s do this.</p>
-<pre class="r"><code>car2 &lt;- car[!is.na(car$hp), c(&#39;mpg&#39;, &#39;hp&#39;, &#39;year&#39;)]
-
-summary(car2)</code></pre>
-<pre><code>##       mpg              hp        year   
-##  Min.   :12.00   Min.   : 48.0   1:131  
-##  1st Qu.:18.00   1st Qu.: 77.5   2:125  
-##  Median :23.00   Median : 92.0          
-##  Mean   :23.75   Mean   :100.9          
-##  3rd Qu.:29.80   3rd Qu.:113.5          
-##  Max.   :39.00   Max.   :190.0          
-##  NA&#39;s   :6</code></pre>
-<p>Given this smaller data set, our goal might be to predict the missing values for <code>mpg</code>. However, to do this, we have to have a data set with no <code>NA</code>’s. Let’s name it <code>car3</code>.</p>
-<pre class="r"><code>car3 &lt;- car2[!is.na(car2$mpg), ]</code></pre>
-<p>As a last exploration step, let’s plot our data set.</p>
-<pre class="r"><code>plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>summary(hardness)</code></pre>
+<pre><code>##       sand        carbon        hardness    
+##  Min.   : 0   Min.   :0.00   Min.   :61.00  
+##  1st Qu.: 0   1st Qu.:0.00   1st Qu.:67.50  
+##  Median :15   Median :0.25   Median :69.00  
+##  Mean   :15   Mean   :0.25   Mean   :69.61  
+##  3rd Qu.:30   3rd Qu.:0.50   3rd Qu.:74.00  
+##  Max.   :30   Max.   :0.50   Max.   :74.00</code></pre>
+<p>As one can see from the above table, the multi-valued discrete attributes are being interpreted as numeric; however, we should set them as factor. For changing them, we can do the following</p>
+<pre class="r"><code>hardness$sand &lt;- factor(hardness$sand, levels = c(0, 15, 30), labels = c(&#39;lowS&#39;, &#39;medS&#39;, &#39;highS&#39;))
+hardness$carbon &lt;- factor(hardness$carbon, levels = c(0.00, 0.25, 0.50), labels = c(&#39;lowC&#39;, &#39;medC&#39;, &#39;highC&#39;))
+summary(hardness)</code></pre>
+<pre><code>##     sand     carbon     hardness    
+##  lowS :6   lowC :6   Min.   :61.00  
+##  medS :6   medC :6   1st Qu.:67.50  
+##  highS:6   highC:6   Median :69.00  
+##                      Mean   :69.61  
+##                      3rd Qu.:74.00  
+##                      Max.   :74.00</code></pre>
+<p>Once we have the data, we can do a few plots that might help us understanding our problem. We can start by doing two different boxplots for the two categorical variables.</p>
+<pre class="r"><code>boxplot(hardness ~ sand, data = hardness)</code></pre>
+<p><img src="case_study_02_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>boxplot(hardness ~ carbon, data = hardness)</code></pre>
+<p><img src="case_study_02_files/figure-html/unnamed-chunk-4-2.png" width="672" /> From both plots, it seems like there is a difference in one of the treatments (low doses for both sand and carbon) regarding the hardness of the material. However, we should only analyse the two factors separately if we can conclude that there is no interaction between them, meaning that there is no partial effect of one factor over the other. To see this, let’s use the <code>interaction.plot()</code> function to explore the possible interactions between the factors.</p>
+<pre class="r"><code>interaction.plot(x.factor = hardness$sand, trace.factor = hardness$carbon, response = hardness$hardness)</code></pre>
+<p><img src="case_study_02_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>interaction.plot(x.factor = hardness$carbon, trace.factor = hardness$sand, response = hardness$hardness)</code></pre>
+<p><img src="case_study_02_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
+<p>From the both plots above, the interactions (if any) do not seem to be important (since the lines are, more or less, parallel). As an important side note, if there is <strong>no</strong> interaction, the main effects (if significant) will tell us if there is variation among the levels of the factor in question; however, if modeled with interaction, the main effects may be difficult to be correctly explored and should be avoided. In this case, one may simply consider all pairs of levels as separate treatments.</p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Fitting a model</h1>
-<p>From the previous plot, although we suspect that a linear model might not be appropriate for this data set as it is, let’s fit it and analyse the results.</p>
-<p>In particular, we will fit the following model</p>
-<p><span class="math display">\[
-\texttt{mpg}_i = \beta_0 + \texttt{hp}_i \cdot \beta_1 + \epsilon_i; \text{ such that } \epsilon_i \overset{\text{i.i.d.}}{\sim} \text{Normal}(0, \sigma^2_{\epsilon})
-\]</span></p>
-<pre class="r"><code>model &lt;- lm(formula = mpg ~ hp, data = car3)
-summary(model)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = mpg ~ hp, data = car3)
+<p>So let’s start by fitting our complete model.</p>
+<pre class="r"><code>model &lt;- lm(formula = hardness ~ sand * carbon, data = hardness)
+anova(model)</code></pre>
+<pre><code>## Analysis of Variance Table
 ## 
-## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -9.3908 -3.3377 -0.0706  2.7713 11.7533 
-## 
-## Coefficients:
-##              Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) 42.543005   0.941244   45.20   &lt;2e-16 ***
-## hp          -0.188003   0.009001  -20.89   &lt;2e-16 ***
+## Response: hardness
+##             Df  Sum Sq Mean Sq F value  Pr(&gt;F)  
+## sand         2 106.778  53.389  6.5374 0.01764 *
+## carbon       2  87.111  43.556  5.3333 0.02967 *
+## sand:carbon  4   8.889   2.222  0.2721 0.88870  
+## Residuals    9  73.500   8.167                  
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>As we can see from the above table (and p-values), we <strong>reject</strong> the hypothesis “sand have no significant effect on hardness”, we reject the hypothesis “carbon have no significant effect on hardness”, as we <strong>fail to reject</strong> the hypothesis “sand and carbon interaction have no significant on hardness”. Thus, we can fit the following simplified model</p>
+<pre class="r"><code>model2 &lt;- lm(formula = hardness ~ sand + carbon, data = hardness)
+anova(model2)</code></pre>
+<pre><code>## Analysis of Variance Table
 ## 
-## Residual standard error: 4.362 on 248 degrees of freedom
-## Multiple R-squared:  0.6376, Adjusted R-squared:  0.6361 
-## F-statistic: 436.2 on 1 and 248 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>From the above summary, we have strong evidences that both <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are different than 0. The residuals do not seem symmetric, though. Also, <span class="math inline">\(\text{R}^2 =\)</span> 0.6375558. Now, let’s plot the fitted model.</p>
-<pre class="r"><code>plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-abline(model)
-legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p>However, notice that the relation between <code>hp</code> and <code>mpg</code> does not seem to be linear, and the <code>age</code> might also provide information when describe the response variable. Thus, before taking any conclusions from the fitted model, let’s do an analysis of residuals. We will focus on the “Residuals vs Fitted” and “Normal Q-Q” plots.</p>
-<pre class="r"><code>plot(model, which = c(1, 2))</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-10-1.png" width="672" /><img src="case_study_02_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
-<p>From the “Residuals vs Fitted” plots, we may see that a linear relationship does not correctly describe how <code>mpg</code> is written as a function of <code>hp</code>, since we can see a pattern for the residuals (as opposed to a “well spread and random” cloud of points around <span class="math inline">\(y = 0\)</span>). Also, from the “Normal Q-Q” plot, the residuals seem to be normally distributed (we will test it).</p>
-<p>To confirm these visual analyses, let’s conduct a proper test. To check for the assumption of equal variance, since we have a quantitative regressor, we can use the Score Test, available in the <code>car</code> package through the <code>ncvTest()</code> function. Also, to check for the normality of the residuals, we will use the Shapiro-Wilk test (<code>shapiro.test()</code>).</p>
-<pre class="r"><code>library(&#39;car&#39;)</code></pre>
-<pre><code>## Loading required package: carData</code></pre>
-<pre class="r"><code>ncvTest(model)</code></pre>
-<pre><code>## Non-constant Variance Score Test 
-## Variance formula: ~ fitted.values 
-## Chisquare = 6.945645, Df = 1, p = 0.0084024</code></pre>
-<pre class="r"><code>shapiro.test(resid(model))</code></pre>
-<pre><code>## 
-##  Shapiro-Wilk normality test
-## 
-## data:  resid(model)
-## W = 0.98926, p-value = 0.06041</code></pre>
-<p>As the p-values are too small for the first test, we have strong evidences against equal variance. On the other hand, we fail to reject the hypothesis of normally distributed residuals (with a significance level of <span class="math inline">\(5\%\)</span>). Thus, as at least one assumption for this model does not hold, the results might not be reliable.</p>
-<p>As a way to overcome this issue, we will transform the data according to the following rule</p>
-<p><span class="math display">\[ 
-w(\lambda) = 
-\begin{cases}
-  (y^{\lambda} - 1)/\lambda &amp;, \text{ if } \lambda \neq 0 \\
-  \log(y) &amp;, \text{ if } \lambda = 0.
-\end{cases}
-\]</span></p>
-<p>This can be achieved by using the <code>boxCox()</code> function from the <code>car</code> package. Based on it, we will retrieve the value of <code>lambda</code> and will apply the above transformation.</p>
-<pre class="r"><code>bc &lt;- boxCox(model)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<pre class="r"><code>(lambda &lt;- bc$x[which.max(bc$y)])</code></pre>
-<pre><code>## [1] -0.5454545</code></pre>
-<p>Now, let’s create a function to transform our data based on the value of <span class="math inline">\(\lambda\)</span> and based on the above rule. We will name it <code>tranfData()</code>. Also, we will create a function to transform our data back to the original scale. We will name it <code>tranfData_back()</code>. This second function, if <span class="math inline">\(\lambda = 0\)</span>, will be given by <span class="math inline">\(y(\lambda) = (w\lambda + 1)^{1/\lambda}\)</span>.</p>
-<pre class="r"><code>transfData &lt;- function (data, lambda) { ((data ^ lambda - 1) / lambda) }
-transfData_back &lt;- function (data, lambda) { ((data * lambda + 1) ^ (1 / lambda)) }</code></pre>
-<p>Therefore, we can easily transform our data, given <span class="math inline">\(\lambda =\)</span> -0.55, in the following way</p>
-<pre class="r"><code>car3$mpg_transf &lt;- sapply(X = car3$mpg, FUN = transfData, lambda = lambda)
-head(car3, 5)</code></pre>
-<pre><code>##   mpg  hp year mpg_transf
-## 1  18 130    1   1.454413
-## 2  16 150    1   1.429271
-## 3  17 140    1   1.442414
-## 8  14 160    1   1.398742
-## 9  24  95    1   1.509442</code></pre>
-<pre class="r"><code>plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
-<p>Finally, we can fit again a linear model for the transformed data.</p>
-<pre class="r"><code>model2 &lt;- lm(formula = mpg_transf ~ hp, data = car3)
-summary(model2)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = mpg_transf ~ hp, data = car3)
-## 
-## Residuals:
-##       Min        1Q    Median        3Q       Max 
-## -0.079235 -0.021397  0.001967  0.020464  0.074192 
-## 
-## Coefficients:
-##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  1.656e+00  6.607e-03  250.69   &lt;2e-16 ***
-## hp          -1.622e-03  6.318e-05  -25.68   &lt;2e-16 ***
+## Response: hardness
+##           Df  Sum Sq Mean Sq F value   Pr(&gt;F)   
+## sand       2 106.778  53.389  8.4241 0.004505 **
+## carbon     2  87.111  43.556  6.8726 0.009195 **
+## Residuals 13  82.389   6.338                    
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Now, as <a href="./case_study_01.html">before</a>, we can compute the estimated means and effects for sand and carbon from <code>hardness ~ sand + carbon</code>.</p>
+<pre class="r"><code>modAOV &lt;- aov(formula = hardness ~ sand + carbon, data = hardness)
+model.tables(modAOV, &#39;means&#39;)</code></pre>
+<pre><code>## Tables of means
+## Grand mean
+##          
+## 69.61111 
 ## 
-## Residual standard error: 0.03062 on 248 degrees of freedom
-## Multiple R-squared:  0.7267, Adjusted R-squared:  0.7256 
-## F-statistic: 659.3 on 1 and 248 DF,  p-value: &lt; 2.2e-16</code></pre>
-<pre class="r"><code>plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-abline(model2)
-legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
-<p>Also, we can analyse the diagnostic plots, as before. As well as conduct the appropriate tests.</p>
+##  sand 
+## sand
+##  lowS  medS highS 
+## 66.33 70.33 72.17 
+## 
+##  carbon 
+## carbon
+##  lowC  medC highC 
+## 66.50 71.17 71.17</code></pre>
+<pre class="r"><code># Effects
+model.tables(modAOV)</code></pre>
+<pre><code>## Tables of effects
+## 
+##  sand 
+## sand
+##   lowS   medS  highS 
+## -3.278  0.722  2.556 
+## 
+##  carbon 
+## carbon
+##    lowC    medC   highC 
+## -3.1111  1.5556  1.5556</code></pre>
+<p>Next, let’s do a residual analysis, so that we can make sure that our assumptions hold. We will plot the “Residuals vs. Fitted” and “Normal Q-Q” graphs, and conduct the appropriate tests, namely, <code>ncvTest()</code> (notice it is not the same as <code>leveneTest()</code>) and <code>shapiro.test()</code> (for <code>resid()</code>), for the equal variance and normally distributed residuals assumptions, respectively.</p>
 <pre class="r"><code>plot(model2, which = c(1, 2))</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-16-1.png" width="672" /><img src="case_study_02_files/figure-html/unnamed-chunk-16-2.png" width="672" /></p>
-<pre class="r"><code>ncvTest(model2)</code></pre>
+<p><img src="case_study_02_files/figure-html/unnamed-chunk-9-1.png" width="672" /><img src="case_study_02_files/figure-html/unnamed-chunk-9-2.png" width="672" /></p>
+<pre class="r"><code>library(&#39;car&#39;)
+ncvTest(model2)</code></pre>
 <pre><code>## Non-constant Variance Score Test 
 ## Variance formula: ~ fitted.values 
-## Chisquare = 1.087962, Df = 1, p = 0.29692</code></pre>
+## Chisquare = 0.000267911, Df = 1, p = 0.98694</code></pre>
 <pre class="r"><code>shapiro.test(resid(model2))</code></pre>
 <pre><code>## 
 ##  Shapiro-Wilk normality test
 ## 
 ## data:  resid(model2)
-## W = 0.98934, p-value = 0.06252</code></pre>
-<p>As we would expect, the results look much better now. However, we can still use information about <code>year</code>, which seems to play a role in explaining the response variable. That being said, let’s fit this new model.</p>
-<pre class="r"><code>model3 &lt;- lm(formula = mpg_transf ~ hp * year, data = car3)
-summary(model3)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = mpg_transf ~ hp * year, data = car3)
+## W = 0.96901, p-value = 0.779</code></pre>
+<p>As the p-values are large for both tests, the assumptions seem to hold. Also, the plots allow us to conclude the same. Therefore, <code>model2</code> might correctly model our problem.</p>
+<p>Also, as <a href="./case_study_01.html">before</a>, we can also do a pairwise analysis.</p>
+<pre class="r"><code>(modTuk &lt;- TukeyHSD(modAOV))</code></pre>
+<pre><code>##   Tukey multiple comparisons of means
+##     95% family-wise confidence level
 ## 
-## Residuals:
-##       Min        1Q    Median        3Q       Max 
-## -0.061671 -0.017084  0.001801  0.018128  0.065467 
+## Fit: aov(formula = hardness ~ sand + carbon, data = hardness)
 ## 
-## Coefficients:
-##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  1.620e+00  7.767e-03 208.563  &lt; 2e-16 ***
-## hp          -1.435e-03  6.886e-05 -20.836  &lt; 2e-16 ***
-## year2        4.570e-02  1.159e-02   3.945 0.000104 ***
-## hp:year2    -1.118e-04  1.133e-04  -0.986 0.325015    
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## $sand
+##                diff        lwr      upr     p adj
+## medS-lowS  4.000000  0.1622397 7.837760 0.0408237
+## highS-lowS 5.833333  1.9955730 9.671094 0.0039170
+## highS-medS 1.833333 -2.0044270 5.671094 0.4403222
 ## 
-## Residual standard error: 0.02561 on 246 degrees of freedom
-## Multiple R-squared:  0.8103, Adjusted R-squared:  0.808 
-## F-statistic: 350.3 on 3 and 246 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>From the above table, we can see that the interaction (<code>hp:year2</code>) is not significant; therefore, we can fit a simpler model.</p>
-<pre class="r"><code>model4 &lt;- lm(formula = mpg_transf ~ hp + year, data = car3)
-coeffi &lt;- model4$coefficients
-summary(model4)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = mpg_transf ~ hp + year, data = car3)
-## 
-## Residuals:
-##       Min        1Q    Median        3Q       Max 
-## -0.061994 -0.017143  0.001694  0.017929  0.065681 
-## 
-## Coefficients:
-##               Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  1.624e+00  6.323e-03  256.91   &lt;2e-16 ***
-## hp          -1.476e-03  5.469e-05  -26.99   &lt;2e-16 ***
-## year2        3.477e-02  3.353e-03   10.37   &lt;2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 0.02561 on 247 degrees of freedom
-## Multiple R-squared:  0.8096, Adjusted R-squared:  0.808 
-## F-statistic:   525 on 2 and 247 DF,  p-value: &lt; 2.2e-16</code></pre>
-<pre class="r"><code>plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-abline(coeffi[[1]], coeffi[[2]], col = 2)
-abline(coeffi[[1]] + coeffi[[3]], coeffi[[2]], col = 3)
-legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
-<p>Again, we can analyse the diagnostic plots and conduct the appropriate tests.</p>
-<pre class="r"><code>plot(model4, which = c(1, 2))</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-19-1.png" width="672" /><img src="case_study_02_files/figure-html/unnamed-chunk-19-2.png" width="672" /></p>
-<pre class="r"><code>ncvTest(model4)</code></pre>
-<pre><code>## Non-constant Variance Score Test 
-## Variance formula: ~ fitted.values 
-## Chisquare = 2.838162, Df = 1, p = 0.092049</code></pre>
-<pre class="r"><code>shapiro.test(resid(model4))</code></pre>
-<pre><code>## 
-##  Shapiro-Wilk normality test
-## 
-## data:  resid(model4)
-## W = 0.99006, p-value = 0.08516</code></pre>
-<p>Thus, for a significance level of <span class="math inline">\(5\%\)</span> we fail to reject the hypotheses of equal variance and normality. Meaning that this might be an appropriate model for our data. However, recall that we are modelling a transformed data set. We can get a model for our original data by doing the following. For a transformation <span class="math inline">\(f\)</span>, we have the</p>
-<p><span class="math display">\[\begin{align*}
-\texttt{mpg}_i &amp;= f^{-1}(1.624 -0.001\texttt{hp}_i)&amp;, \text{ if } \texttt{year} = 1 \\
-\texttt{mpg}_i &amp;= f^{-1}((1.624 + 0.035) -0.001\texttt{hp}_i)&amp;, \text{ if } \texttt{year} = 2
-\end{align*}\]</span></p>
-<p>And we can plot it in the following way</p>
-<pre class="r"><code>plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
-curve(transfData_back(coeffi[[1]] + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 2)
-curve(transfData_back((coeffi[[1]] + coeffi[[3]]) + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 3)
-legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+## $carbon
+##                diff        lwr      upr     p adj
+## medC-lowC  4.666667  0.8289063 8.504427 0.0174826
+## highC-lowC 4.666667  0.8289063 8.504427 0.0174826
+## highC-medC 0.000000 -3.8377603 3.837760 1.0000000</code></pre>
+<pre class="r"><code>plot(modTuk)</code></pre>
+<p><img src="case_study_02_files/figure-html/unnamed-chunk-10-1.png" width="672" /><img src="case_study_02_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Predicting unknown values</h1>
-<p>Now that we have a “good” fitted model, we can predict, as suggested before, the values of <code>mpg</code> for which we had <code>NA</code>’s before. We can do this in the following way</p>
-<pre class="r"><code>pos_unk &lt;- which(is.na(car2$mpg))
-unknown &lt;- car2[is.na(car2$mpg), ]
-
-(predicted_values &lt;- sapply(X = predict(object = model4, newdata = data.frame(hp = unknown$hp, year = unknown$year)), FUN = transfData_back, lambda = lambda))</code></pre>
-<pre><code>##        1        2        3        4        5        6 
-## 13.00153 13.98905 12.25847 12.25847 31.38660 22.37227</code></pre>
-<pre class="r"><code>car2[is.na(car2$mpg), &#39;mpg&#39;] &lt;- predicted_values
-
-pch &lt;- rep(19, nrow(car2)); pch[pos_unk] &lt;- 9
-plot(mpg ~ hp, pch = pch, col = (as.numeric(year) + 1), data = car2)
-curve(transfData_back(coeffi[[1]] + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 2)
-curve(transfData_back((coeffi[[1]] + coeffi[[3]]) + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 3)
-legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>Finally, the predicted values for each combination of level of <code>sand</code> and <code>carbon</code> can be computed using the <code>predict()</code> function.</p>
+<pre class="r"><code>(newdata &lt;- data.frame(sand = factor(rep(c(&#39;lowS&#39;, &#39;medS&#39;, &#39;highS&#39;), each = 3)), carbon = factor(rep(c(&#39;lowC&#39;, &#39;medC&#39;, &#39;highC&#39;), times = 3))))</code></pre>
+<pre><code>##    sand carbon
+## 1  lowS   lowC
+## 2  lowS   medC
+## 3  lowS  highC
+## 4  medS   lowC
+## 5  medS   medC
+## 6  medS  highC
+## 7 highS   lowC
+## 8 highS   medC
+## 9 highS  highC</code></pre>
+<pre class="r"><code>newdata$predict &lt;- predict(model2, newdata = newdata)
+newdata</code></pre>
+<pre><code>##    sand carbon  predict
+## 1  lowS   lowC 63.22222
+## 2  lowS   medC 67.88889
+## 3  lowS  highC 67.88889
+## 4  medS   lowC 67.22222
+## 5  medS   medC 71.88889
+## 6  medS  highC 71.88889
+## 7 highS   lowC 69.05556
+## 8 highS   medC 73.72222
+## 9 highS  highC 73.72222</code></pre>
 </div>
 
 

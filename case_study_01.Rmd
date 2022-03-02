@@ -10,4 +10,115 @@ output:
 
 # Introduction
 
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+For this problem, we will analyse data about the the tensile strength of Portland cement. Four different mixing techniques were tested and the resulting tensile strength was measured. You can download the `.csv` file [here](./datasets/tesile_strength.csv).
+
+This data set contains following the variables:
+
+1. `mixingType` (multi-valued discrete)
+2. `strength` (continuous)
+
+# Exploring the data set
+
+In order to explore the data set and perform initial analyses, we have to read it (with `R`) first. Provided that the `.csv` file is saved within the `datasets/` folder, one can read the file in the following way.
+
+```{r}
+col.names <- c('mixingType', 'strength')
+ts <- read.csv(file = 'datasets/tensile_strength.csv', header = FALSE, sep = ',', col.names = col.names)
+head(ts, 5)
+```
+
+Now, let's see a summary of our data.
+
+```{r}
+summary(ts)
+```
+
+As one can see from the above table, the multi-valued discrete attribute is being interpreted as character; however, we should set is as factor. For changing it, we can do the following
+
+```{r}
+ts$mixingType <- as.factor(ts$mixingType)
+summary(ts)
+```
+
+As a way to first start exploring the data, we can do a boxplots for `strength` as a function of the `mixingType`, so that we can observe whether the mixing type has an effect on the strength. 
+
+```{r}
+boxplot(strength ~ mixingType, data = ts)
+```
+
+First thing to observe is the fact that the boxes have (approximately) the same height, which supports the assumption of equal variances. Also, especially when one focus on groups `B` and `D`, one can see a clear difference between treatments, which may suggest that the mixing type has effect on the strength. However, we still have to fit a model and perform the appropriate analyses before concluding anything.
+
+# Fitting a model
+
+So let's start by fitting a linear model for `strength` as a function of `mixingType`. We can do this using the `lm()` function, from `base R`.
+
+```{r}
+model <- lm(formula = strength ~ mixingType, data = ts)
+```
+
+However, in this case, we are interested in the ANOVA table. To get it, we can use the `anova()` function for a object returned from the `lm()` method, as `model`. Alternatively, we could have used the `aov(formula = strength ~ mixingType, data = ts)` command.
+
+```{r}
+anova(model)
+```
+
+From the above table, we can see that the p-value (= 0.0004887) is very small, so we reject the null hypothesis that says that all means are the same. Which is the same as saying that there is evidence from the data that the mixing type has an effect on the strength (**if we have a valid model**; we will check it). 
+
+Additionally, we can also compute the estimated means for the for the four mixing types, namely $\hat{\mu} + \hat{\tau}_i$, $\forall i$. To do this, we can use the `model.tables()` function.
+
+```{r}
+# Average values
+modAOV <- aov(formula = strength ~ mixingType, data = ts)
+model.tables(modAOV, 'means')
+
+# Effects
+model.tables(modAOV)
+```
+
+Notice that, by analyzing `summary(model)` this is the same as 
+
+```{r}
+summary(model)
+data.frame(Treatments = c('mu+tau_1', 'mu+tau_2', 'mu+tau_3', 'mu+tau_4'),
+           Average    = model$coefficients[1] + c(0, model$coefficients[2:4]),
+           row.names  = c('mixtechA', names(model$coefficients)[2:4]))
+data.frame(Treatments = c('tau_1', 'tau_2', 'tau_3', 'tau_4'),
+           Effect     = model$coefficients[1] + c(0, model$coefficients[2:4]) - mean(ts$strength),
+           row.names  = c('mixtechA', names(model$coefficients)[2:4])) # Subtracting the mean
+```
+
+Now, we will do one the most important steps, namely "residual analysis". It is crucial to verify whether the model assumptions hold. In this case, we will test for equal variance and normality for the residuals. We can do this graphically as follows
+
+```{r}
+plot(model, which = c(1, 2))
+```
+
+Both plots look okay, since points are equally dispersed around $y = 0$ for the "Residuals vs. Fitted" graph, and the values lie along the line (meaning the data distribution has the same shape as the theoretical distribution we have supposed; i.e., Normal) for the "Normal Q-Q" graph. However, to confirm this visual interpretation of the plots, we can perform a test for both assumption. To do this, we will use the Score Test, available in the `car` package through the `leveneTest()` function. Also, to check for the normality of the residuals, we will use the Shapiro-Wilk test (`shapiro.test()`).
+
+```{r}
+library('car')
+leveneTest(model)
+shapiro.test(resid(model))
+```
+Since the p-values are large for both tests, we fail to reject the hypothesis of equal variance and normality, meaning that assumptions hold.
+
+Finally, we can also do a pairwise comparison among the treatments. In this case, we will use the Tukey's Honest Significant Difference method. For a 95\% confidence level, and using the `TukeyHSD()` function, 
+
+```{r}
+(modTuk <- TukeyHSD(modAOV))
+plot(modTuk)
+```
+
+As we can see from the table and the plot, we fail to reject that the means for the pairs `B-A`, `C-A`, and `C-B` are different, but we reject the null hypothesis for the pairs `D-A`, `D-B`, and `D-C`. Meaning that mixing type `D` is different from the rest, but the others cannot be distinguished.
+
+So the question is, **if you had to choose a mixing type, which one would you pick?**
+
+
+# Predicting unknown values
+
+As expected, the predicted values for each group will be equal to the estimated means (as computed above). To see this, we can use the `predict()` function.
+
+```{r}
+newdata <- data.frame(mixingType = factor(c('A', 'B', 'C', 'D')))
+predict(model, newdata = newdata)
+```

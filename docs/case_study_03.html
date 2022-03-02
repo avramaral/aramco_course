@@ -336,6 +336,9 @@ div.tocify {
 <li>
   <a href="case_study_05.html">Case Study 05</a>
 </li>
+<li>
+  <a href="case_study_06.html">Case Study 06</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -361,119 +364,300 @@ div.tocify {
 
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>For this problem, we will analyse data collected in an observational study in a semiconductor manufacturing plant. Data were retrieved from the <a href="https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363"><strong>Applied Statistics and Probability for Engineers</strong> book</a>. You can download the <code>.csv</code> file <a href="./datasets/wire_bond.csv">here</a>. In this plant, the finished semiconductor is wire-bonded to a frame. The variables reported are pull strength (a measure of the amount of force required to break the bond), the wire length, and the height of the die. Thus, the data set contains following the attributes:</p>
+<p>For this problem, we will analyse data about the mileage per gallon performances of various cars. The data set was retrieved from <a href="https://archive.ics.uci.edu/ml/datasets/Auto+MPG">this page</a> (with changes). You can download the <code>.csv</code> file <a href="./datasets/car.csv">here</a>.</p>
+<p>This data set contains following the variables:</p>
 <ol style="list-style-type: decimal">
-<li><code>pull_strength</code> (quantitative)</li>
-<li><code>wire_length</code> (quantitative)</li>
-<li><code>height</code> (quantitative)</li>
+<li><code>mpg</code> (continuous)</li>
+<li><code>cylinders</code> (multi-valued discrete)</li>
+<li><code>displacement</code> (continuous)</li>
+<li><code>horsepower</code> (continuous)</li>
+<li><code>weight</code> (continuous)</li>
+<li><code>accelaration</code> (continuous)</li>
+<li><code>model year</code> (multi-valued discrete)</li>
+<li><code>origin</code> (multi-valued discrete)</li>
 </ol>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Exploring the data set</h1>
 <p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
-<pre class="r"><code>col.names &lt;- c(&#39;pull_strength&#39;, &#39;wire_length&#39;, &#39;height&#39;)
-data &lt;- read.csv(file = &#39;datasets/wire_bond.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
-head(data, 5)</code></pre>
-<pre><code>##   pull_strength wire_length height
-## 1          9.95           2     50
-## 2         24.45           8    110
-## 3         31.75          11    120
-## 4         35.00          10    550
-## 5         25.02           8    295</code></pre>
+<pre class="r"><code>col.names &lt;- c(&#39;mpg&#39;, &#39;cylinders&#39;, &#39;displacement&#39;, &#39;hp&#39;, &#39;weight&#39;, &#39;acceleration&#39;, &#39;year&#39;, &#39;origin&#39;)
+car &lt;- read.csv(file = &#39;datasets/car.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
+head(car, 5)</code></pre>
+<pre><code>##   mpg cylinders displacement  hp weight acceleration year origin
+## 1  18         8          307 130   3504         12.0   70      1
+## 2  16         8          304 150   3433         12.0   70      1
+## 3  17         8          302 140   3449         10.5   70      1
+## 4  NA         8          350 165   4142         11.5   70      1
+## 5  NA         8          351 153   4034         11.0   70      1</code></pre>
 <p>Now, let’s see a summary of our data.</p>
-<pre class="r"><code>summary(data)</code></pre>
-<pre><code>##  pull_strength    wire_length        height     
-##  Min.   : 9.60   Min.   : 1.00   Min.   : 50.0  
-##  1st Qu.:17.08   1st Qu.: 4.00   1st Qu.:200.0  
-##  Median :24.45   Median : 8.00   Median :360.0  
-##  Mean   :29.03   Mean   : 8.24   Mean   :331.8  
-##  3rd Qu.:37.00   3rd Qu.:11.00   3rd Qu.:500.0  
-##  Max.   :69.00   Max.   :20.00   Max.   :600.0</code></pre>
-<p>In this case, there are no missing values—which is great. However, since we want to use most information from this data set, it might not be easy to visualize how one attribute (in our case <code>pull_strength</code>) can be written as a function of more than two variables at the same time. Fortunately, we can still plot data in 3D (using the <code>scatterplot3d()</code> function from the <code>scatterplot3d</code> package).</p>
-<pre class="r"><code>library(&#39;scatterplot3d&#39;)
-scatterplot3d(data$wire_length, data$height, data$pull_strength, color = 2, pch = 19, angle = 70)</code></pre>
-<p><img src="case_study_03_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<p>Also, it is useful to see how variables are correlated. To do this, we can plot (at least) two types of graphs; in this case, we will use the <code>scatterplotMatrix()</code> function from the <code>car</code> package, and the <code>corrplot.mixed()</code> function from the <code>corrplot</code> package to plot the correlation (from <code>cor()</code>) matrix.</p>
-<pre class="r"><code>library(&#39;car&#39;)
+<pre class="r"><code>summary(car)</code></pre>
+<pre><code>##       mpg          cylinders      displacement         hp            weight    
+##  Min.   :12.00   Min.   :3.000   Min.   : 68.0   Min.   : 48.0   Min.   :1613  
+##  1st Qu.:18.00   1st Qu.:4.000   1st Qu.:107.0   1st Qu.: 77.5   1st Qu.:2237  
+##  Median :23.00   Median :4.000   Median :148.5   Median : 92.0   Median :2804  
+##  Mean   :23.74   Mean   :5.372   Mean   :187.9   Mean   :100.9   Mean   :2936  
+##  3rd Qu.:29.80   3rd Qu.:6.000   3rd Qu.:250.0   3rd Qu.:113.5   3rd Qu.:3456  
+##  Max.   :39.00   Max.   :8.000   Max.   :400.0   Max.   :190.0   Max.   :4746  
+##  NA&#39;s   :6                                       NA&#39;s   :2                     
+##   acceleration        year           origin     
+##  Min.   : 8.00   Min.   :70.00   Min.   :1.000  
+##  1st Qu.:14.00   1st Qu.:73.00   1st Qu.:1.000  
+##  Median :15.50   Median :76.00   Median :1.000  
+##  Mean   :15.58   Mean   :76.36   Mean   :1.558  
+##  3rd Qu.:17.00   3rd Qu.:79.75   3rd Qu.:2.000  
+##  Max.   :23.50   Max.   :82.00   Max.   :3.000  
+## </code></pre>
+<p>As one can see from the above table, some multi-valued discrete attributes are being interpreted as integer values; also, we have <code>NA</code>’s for the <code>mpg</code> and <code>horsepower</code> attributes. To verify (and change) the variable types, we can do the following</p>
+<pre class="r"><code>car$cylinders &lt;- as.factor(car$cylinders)
+car$year      &lt;- as.factor(car$year)
+car$origin    &lt;- as.factor(car$origin)</code></pre>
+<p>Also, as there are too many classes for the <code>year</code>, and as a way to make our analyses simpler, let’s categorize the cars into <code>old</code> and <code>new</code>, such that cars from before <code>77</code> will be labeled as <code>1</code> and the remaining cars will be labeled as <code>2</code>.</p>
+<pre class="r"><code>car$year &lt;- as.factor(sapply(X = car$year, FUN = function (item) { ifelse(item %in% 70:76, 1, 2) }))
 
-scatterplotMatrix(data)</code></pre>
-<p><img src="case_study_03_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<pre class="r"><code>library(&#39;corrplot&#39;)</code></pre>
-<pre><code>## corrplot 0.92 loaded</code></pre>
-<pre class="r"><code>corrplot.mixed(cor(data))</code></pre>
-<p><img src="case_study_03_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-<p>From the second plot, we can see that <code>pull_strength</code> is highly correlated with <code>wire_length</code>, and this relation is detailed in the first plot. These graphs will be even more useful once we have more variables (as we will see in our next problem).</p>
+summary(car)</code></pre>
+<pre><code>##       mpg        cylinders  displacement         hp            weight    
+##  Min.   :12.00   3:  3     Min.   : 68.0   Min.   : 48.0   Min.   :1613  
+##  1st Qu.:18.00   4:134     1st Qu.:107.0   1st Qu.: 77.5   1st Qu.:2237  
+##  Median :23.00   5:  1     Median :148.5   Median : 92.0   Median :2804  
+##  Mean   :23.74   6: 62     Mean   :187.9   Mean   :100.9   Mean   :2936  
+##  3rd Qu.:29.80   8: 58     3rd Qu.:250.0   3rd Qu.:113.5   3rd Qu.:3456  
+##  Max.   :39.00             Max.   :400.0   Max.   :190.0   Max.   :4746  
+##  NA&#39;s   :6                                 NA&#39;s   :2                     
+##   acceleration   year    origin 
+##  Min.   : 8.00   1:132   1:167  
+##  1st Qu.:14.00   2:126   2: 38  
+##  Median :15.50           3: 53  
+##  Mean   :15.58                  
+##  3rd Qu.:17.00                  
+##  Max.   :23.50                  
+## </code></pre>
+<p>Now, let’s deal with the missing values. Different approaches could have been taken here, and they highly depend on your problem (and your knowledge about the problem). For this particular example, suppose that we want to describe the <code>mpg</code> data as a function of the <code>hp</code> and <code>year</code>. Since we do not now much about this data, a simpler options would be to exclude the instances with missing values for the <code>hp</code>. Let’s do this.</p>
+<pre class="r"><code>car2 &lt;- car[!is.na(car$hp), c(&#39;mpg&#39;, &#39;hp&#39;, &#39;year&#39;)]
+
+summary(car2)</code></pre>
+<pre><code>##       mpg              hp        year   
+##  Min.   :12.00   Min.   : 48.0   1:131  
+##  1st Qu.:18.00   1st Qu.: 77.5   2:125  
+##  Median :23.00   Median : 92.0          
+##  Mean   :23.75   Mean   :100.9          
+##  3rd Qu.:29.80   3rd Qu.:113.5          
+##  Max.   :39.00   Max.   :190.0          
+##  NA&#39;s   :6</code></pre>
+<p>Given this smaller data set, our goal might be to predict the missing values for <code>mpg</code>. However, to do this, we have to have a data set with no <code>NA</code>’s. Let’s name it <code>car3</code>.</p>
+<pre class="r"><code>car3 &lt;- car2[!is.na(car2$mpg), ]</code></pre>
+<p>As a last exploration step, let’s plot our data set.</p>
+<pre class="r"><code>plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
+legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Fitting a model</h1>
-<p>Our very first task will be fitting a model with all variables so that we can try to explain how <code>pull_strength</code> relates with the other variables. We can do this in the following way.</p>
-<pre class="r"><code>model &lt;- lm(formula = pull_strength ~ ., data = data)
+<p>From the previous plot, although we suspect that a linear model might not be appropriate for this data set as it is, let’s fit it and analyse the results.</p>
+<p>In particular, we will fit the following model</p>
+<p><span class="math display">\[
+\texttt{mpg}_i = \beta_0 + \texttt{hp}_i \cdot \beta_1 + \epsilon_i; \text{ such that } \epsilon_i \overset{\text{i.i.d.}}{\sim} \text{Normal}(0, \sigma^2_{\epsilon})
+\]</span></p>
+<pre class="r"><code>model &lt;- lm(formula = mpg ~ hp, data = car3)
 summary(model)</code></pre>
 <pre><code>## 
 ## Call:
-## lm(formula = pull_strength ~ ., data = data)
+## lm(formula = mpg ~ hp, data = car3)
 ## 
 ## Residuals:
-##    Min     1Q Median     3Q    Max 
-## -3.865 -1.542 -0.362  1.196  5.841 
+##     Min      1Q  Median      3Q     Max 
+## -9.3908 -3.3377 -0.0706  2.7713 11.7533 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) 2.263791   1.060066   2.136 0.044099 *  
-## wire_length 2.744270   0.093524  29.343  &lt; 2e-16 ***
-## height      0.012528   0.002798   4.477 0.000188 ***
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 42.543005   0.941244   45.20   &lt;2e-16 ***
+## hp          -0.188003   0.009001  -20.89   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 2.288 on 22 degrees of freedom
-## Multiple R-squared:  0.9811, Adjusted R-squared:  0.9794 
-## F-statistic: 572.2 on 2 and 22 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>As we can see from the summary, for a significance level of <span class="math inline">\(5\%\)</span>, all coefficients are different than zero. Thus, we should keep them (for our next problem, we will try to simplify the model further).</p>
-<p>Once we have the model, a next step would be performing a residual analysis. To do this, we can plot the diagnostic graphs and run the appropriate tests.</p>
+## Residual standard error: 4.362 on 248 degrees of freedom
+## Multiple R-squared:  0.6376, Adjusted R-squared:  0.6361 
+## F-statistic: 436.2 on 1 and 248 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>From the above summary, we have strong evidences that both <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are different than 0. The residuals do not seem symmetric, though. Also, <span class="math inline">\(\text{R}^2 =\)</span> 0.6375558. Now, let’s plot the fitted model.</p>
+<pre class="r"><code>plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
+abline(model)
+legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>However, notice that the relation between <code>hp</code> and <code>mpg</code> does not seem to be linear, and the <code>age</code> might also provide information when describe the response variable. Thus, before taking any conclusions from the fitted model, let’s do an analysis of residuals. We will focus on the “Residuals vs Fitted” and “Normal Q-Q” plots.</p>
 <pre class="r"><code>plot(model, which = c(1, 2))</code></pre>
-<p><img src="case_study_03_files/figure-html/unnamed-chunk-7-1.png" width="672" /><img src="case_study_03_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
-<p>The plot seems okay, but we still have to do the tests. As a remark, and as extracted from <a href="https://stats.stackexchange.com/questions/239157/what-does-the-residuals-vs-fitted-regression-line-express">this page</a>, “<em>the red line is a LOWESS fit to your residuals vs fitted plot. Basically, it’s smoothing over the points to look for certain kinds of patterns in the residuals. For example, if you fit a linear regression on data that looked like <span class="math inline">\(y = x^2\)</span>, you’d see a noticeable bowed shape</em>”. Regarding the tests, we have the following</p>
-<pre class="r"><code>ncvTest(model)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-10-1.png" width="672" /><img src="case_study_03_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
+<p>From the “Residuals vs Fitted” plots, we may see that a linear relationship does not correctly describe how <code>mpg</code> is written as a function of <code>hp</code>, since we can see a pattern for the residuals (as opposed to a “well spread and random” cloud of points around <span class="math inline">\(y = 0\)</span>). Also, from the “Normal Q-Q” plot, the residuals seem to be normally distributed (we will test it).</p>
+<p>To confirm these visual analyses, let’s conduct a proper test. To check for the assumption of equal variance, since we have a quantitative regressor, we can use the Score Test, available in the <code>car</code> package through the <code>ncvTest()</code> function. Also, to check for the normality of the residuals, we will use the Shapiro-Wilk test (<code>shapiro.test()</code>).</p>
+<pre class="r"><code>library(&#39;car&#39;)
+ncvTest(model)</code></pre>
 <pre><code>## Non-constant Variance Score Test 
 ## Variance formula: ~ fitted.values 
-## Chisquare = 0.04524206, Df = 1, p = 0.83156</code></pre>
+## Chisquare = 6.945645, Df = 1, p = 0.0084024</code></pre>
 <pre class="r"><code>shapiro.test(resid(model))</code></pre>
 <pre><code>## 
 ##  Shapiro-Wilk normality test
 ## 
 ## data:  resid(model)
-## W = 0.95827, p-value = 0.381</code></pre>
-<p>Also, from the test results, we fail to reject the equal variance and normality assumptions, meaning that we have a good model for our data.</p>
-<p>In particular, the model is given by</p>
+## W = 0.98926, p-value = 0.06041</code></pre>
+<p>As the p-values are too small for the first test, we have strong evidences against equal variance. On the other hand, we fail to reject the hypothesis of normally distributed residuals (with a significance level of <span class="math inline">\(5\%\)</span>). Thus, as at least one assumption for this model does not hold, the results might not be reliable.</p>
+<p>As a way to overcome this issue, we will transform the data according to the following rule</p>
+<p><span class="math display">\[ 
+w(\lambda) = 
+\begin{cases}
+  (y^{\lambda} - 1)/\lambda &amp;, \text{ if } \lambda \neq 0 \\
+  \log(y) &amp;, \text{ if } \lambda = 0.
+\end{cases}
+\]</span></p>
+<p>This can be achieved by using the <code>boxCox()</code> function from the <code>car</code> package. Based on it, we will retrieve the value of <code>lambda</code> and will apply the above transformation.</p>
+<pre class="r"><code>bc &lt;- boxCox(model)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>(lambda &lt;- bc$x[which.max(bc$y)])</code></pre>
+<pre><code>## [1] -0.5454545</code></pre>
+<p>Now, let’s create a function to transform our data based on the value of <span class="math inline">\(\lambda\)</span> and based on the above rule. We will name it <code>tranfData()</code>. Also, we will create a function to transform our data back to the original scale. We will name it <code>tranfData_back()</code>. This second function, if <span class="math inline">\(\lambda = 0\)</span>, will be given by <span class="math inline">\(y(\lambda) = (w\lambda + 1)^{1/\lambda}\)</span>.</p>
+<pre class="r"><code>transfData &lt;- function (data, lambda) { ((data ^ lambda - 1) / lambda) }
+transfData_back &lt;- function (data, lambda) { ((data * lambda + 1) ^ (1 / lambda)) }</code></pre>
+<p>Therefore, we can easily transform our data, given <span class="math inline">\(\lambda =\)</span> -0.55, in the following way</p>
+<pre class="r"><code>car3$mpg_transf &lt;- sapply(X = car3$mpg, FUN = transfData, lambda = lambda)
+head(car3, 5)</code></pre>
+<pre><code>##   mpg  hp year mpg_transf
+## 1  18 130    1   1.454413
+## 2  16 150    1   1.429271
+## 3  17 140    1   1.442414
+## 8  14 160    1   1.398742
+## 9  24  95    1   1.509442</code></pre>
+<pre class="r"><code>plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
+legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>Finally, we can fit again a linear model for the transformed data.</p>
+<pre class="r"><code>model2 &lt;- lm(formula = mpg_transf ~ hp, data = car3)
+summary(model2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = mpg_transf ~ hp, data = car3)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.079235 -0.021397  0.001967  0.020464  0.074192 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.656e+00  6.607e-03  250.69   &lt;2e-16 ***
+## hp          -1.622e-03  6.318e-05  -25.68   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.03062 on 248 degrees of freedom
+## Multiple R-squared:  0.7267, Adjusted R-squared:  0.7256 
+## F-statistic: 659.3 on 1 and 248 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
+abline(model2)
+legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Also, we can analyse the diagnostic plots, as before. As well as conduct the appropriate tests.</p>
+<pre class="r"><code>plot(model2, which = c(1, 2))</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-16-1.png" width="672" /><img src="case_study_03_files/figure-html/unnamed-chunk-16-2.png" width="672" /></p>
+<pre class="r"><code>ncvTest(model2)</code></pre>
+<pre><code>## Non-constant Variance Score Test 
+## Variance formula: ~ fitted.values 
+## Chisquare = 1.087962, Df = 1, p = 0.29692</code></pre>
+<pre class="r"><code>shapiro.test(resid(model2))</code></pre>
+<pre><code>## 
+##  Shapiro-Wilk normality test
+## 
+## data:  resid(model2)
+## W = 0.98934, p-value = 0.06252</code></pre>
+<p>As we would expect, the results look much better now. However, we can still use information about <code>year</code>, which seems to play a role in explaining the response variable. That being said, let’s fit this new model.</p>
+<pre class="r"><code>model3 &lt;- lm(formula = mpg_transf ~ hp * year, data = car3)
+summary(model3)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = mpg_transf ~ hp * year, data = car3)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.061671 -0.017084  0.001801  0.018128  0.065467 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.620e+00  7.767e-03 208.563  &lt; 2e-16 ***
+## hp          -1.435e-03  6.886e-05 -20.836  &lt; 2e-16 ***
+## year2        4.570e-02  1.159e-02   3.945 0.000104 ***
+## hp:year2    -1.118e-04  1.133e-04  -0.986 0.325015    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.02561 on 246 degrees of freedom
+## Multiple R-squared:  0.8103, Adjusted R-squared:  0.808 
+## F-statistic: 350.3 on 3 and 246 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>From the above table, we can see that the interaction (<code>hp:year2</code>) is not significant; therefore, we can fit a simpler model.</p>
+<pre class="r"><code>model4 &lt;- lm(formula = mpg_transf ~ hp + year, data = car3)
+coeffi &lt;- model4$coefficients
+summary(model4)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = mpg_transf ~ hp + year, data = car3)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.061994 -0.017143  0.001694  0.017929  0.065681 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.624e+00  6.323e-03  256.91   &lt;2e-16 ***
+## hp          -1.476e-03  5.469e-05  -26.99   &lt;2e-16 ***
+## year2        3.477e-02  3.353e-03   10.37   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.02561 on 247 degrees of freedom
+## Multiple R-squared:  0.8096, Adjusted R-squared:  0.808 
+## F-statistic:   525 on 2 and 247 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>plot(mpg_transf ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
+abline(coeffi[[1]], coeffi[[2]], col = 2)
+abline(coeffi[[1]] + coeffi[[3]], coeffi[[2]], col = 3)
+legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>Again, we can analyse the diagnostic plots and conduct the appropriate tests.</p>
+<pre class="r"><code>plot(model4, which = c(1, 2))</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-19-1.png" width="672" /><img src="case_study_03_files/figure-html/unnamed-chunk-19-2.png" width="672" /></p>
+<pre class="r"><code>ncvTest(model4)</code></pre>
+<pre><code>## Non-constant Variance Score Test 
+## Variance formula: ~ fitted.values 
+## Chisquare = 2.838162, Df = 1, p = 0.092049</code></pre>
+<pre class="r"><code>shapiro.test(resid(model4))</code></pre>
+<pre><code>## 
+##  Shapiro-Wilk normality test
+## 
+## data:  resid(model4)
+## W = 0.99006, p-value = 0.08516</code></pre>
+<p>Thus, for a significance level of <span class="math inline">\(5\%\)</span> we fail to reject the hypotheses of equal variance and normality. Meaning that this might be an appropriate model for our data. However, recall that we are modelling a transformed data set. We can get a model for our original data by doing the following. For a transformation <span class="math inline">\(f\)</span>, we have the</p>
 <p><span class="math display">\[\begin{align*}
-\texttt{pull_strength}_i &amp;= 2.264 + 2.744\texttt{wire_length}_i + 0.013\texttt{height}_i
+\texttt{mpg}_i &amp;= f^{-1}(1.624 -0.001\texttt{hp}_i)&amp;, \text{ if } \texttt{year} = 1 \\
+\texttt{mpg}_i &amp;= f^{-1}((1.624 + 0.035) -0.001\texttt{hp}_i)&amp;, \text{ if } \texttt{year} = 2
 \end{align*}\]</span></p>
-<p>And we can plot the fitted model in the following way</p>
-<pre class="r"><code>plot3d &lt;- scatterplot3d(data$wire_length, data$height, data$pull_strength, color = 2, pch = 19, angle = 70)
-plot3d$plane3d(model)</code></pre>
-<p><img src="case_study_03_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>And we can plot it in the following way</p>
+<pre class="r"><code>plot(mpg ~ hp, pch = 19, col = (as.numeric(year) + 1), data = car3)
+curve(transfData_back(coeffi[[1]] + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 2)
+curve(transfData_back((coeffi[[1]] + coeffi[[3]]) + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 3)
+legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Predicting unknown values</h1>
-<p>Now that we have a “good” fitted model, we can predict, the value of <code>pull_strength</code> for new values of <code>wire_length</code> and <code>height</code>. For instance, we can predict the value of <code>pull_strength</code>, such that <code>wire_length</code> is equal to 7.5 and 12.5 and <code>height</code> is equal to 150 and 450, respectively. <strong>Notice that your new points must lie within the range for the observed data</strong>, otherwise your model may not be appropriate for predicting extrapolated points.</p>
-<pre class="r"><code>newdata &lt;- data.frame(wire_length = c(7.5, 12.5), height = c(150, 450))
+<p>Now that we have a “good” fitted model, we can predict, as suggested before, the values of <code>mpg</code> for which we had <code>NA</code>’s before. We can do this in the following way</p>
+<pre class="r"><code>pos_unk &lt;- which(is.na(car2$mpg))
+unknown &lt;- car2[is.na(car2$mpg), ]
 
-(pred1 &lt;- predict(object = model, newdata = newdata, interval = &#39;confidence&#39;))</code></pre>
-<pre><code>##        fit      lwr      upr
-## 1 24.72499 23.33957 26.11040
-## 2 42.20468 40.92987 43.47948</code></pre>
-<pre class="r"><code>(pred2 &lt;- predict(object = model, newdata = newdata, interval = &#39;prediction&#39;))</code></pre>
-<pre><code>##        fit      lwr      upr
-## 1 24.72499 19.78175 29.66822
-## 2 42.20468 37.29130 47.11805</code></pre>
-<pre class="r"><code>newdata &lt;- cbind(newdata, pull_strength = pred1[, 1])
-data &lt;- rbind(data, newdata)
+(predicted_values &lt;- sapply(X = predict(object = model4, newdata = data.frame(hp = unknown$hp, year = unknown$year)), FUN = transfData_back, lambda = lambda))</code></pre>
+<pre><code>##        1        2        3        4        5        6 
+## 13.00153 13.98905 12.25847 12.25847 31.38660 22.37227</code></pre>
+<pre class="r"><code>car2[is.na(car2$mpg), &#39;mpg&#39;] &lt;- predicted_values
 
-plot3d &lt;- scatterplot3d(data$wire_length, data$height, data$pull_strength, color = c(rep(2, nrow(data) - 2), 3, 3), pch = 19, angle = 70)
-plot3d$plane3d(model)
-legend(&#39;topleft&#39;, c(&#39;Observed data&#39;, &#39;New data&#39;), col = c(2, 3), pch = 19)</code></pre>
-<p><img src="case_study_03_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
-<p>From the above predicted values, notice that this time, we added the confidence interval and the prediction interval. As explained <a href="https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363">Applied Statistics and Probability for Engineers book</a>, “<em>the prediction interval is always wider than the confidence interval. The confidence interval expresses the error in estimating the mean of a distribution, and the prediction interval expresses the error in predicting a future observation from the distribution at the point <span class="math inline">\(\mathbf{x}_0\)</span>. This must include the error in estimating the mean at that point as well as the inherent variability in the random variable <code>wire_length</code> at the same value <span class="math inline">\(\mathbf{x} = \mathbf{x}_0\)</span></em>”.</p>
+pch &lt;- rep(19, nrow(car2)); pch[pos_unk] &lt;- 9
+plot(mpg ~ hp, pch = pch, col = (as.numeric(year) + 1), data = car2)
+curve(transfData_back(coeffi[[1]] + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 2)
+curve(transfData_back((coeffi[[1]] + coeffi[[3]]) + coeffi[[2]] * x, lambda = lambda), from = 0, to = 250, add = TRUE, col = 3)
+legend(&#39;topright&#39;, c(&#39;old&#39;, &#39;new&#39;), col = unique(as.numeric(car3$year) + 1), pch = 19)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 </div>
 
 
