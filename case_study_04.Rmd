@@ -10,4 +10,138 @@ output:
 
 # Introduction
 
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+For this problem, we will analyse a data set with 6 variable (1 response variable + 6 covariates). Although their meaning may not be stated, we will see how important feature selection is when performing multiple regression analysis.  You can download the `.csv` file [here](./datasets/data.csv). The data set contains following the attributes:
+
+1. `var1` (quantitative)
+2. `var2` (quantitative)
+3. `var3` (quantitative)
+4. `var4` (quantitative)
+5. `var5` (quantitative)
+5. `var6` (quantitative)
+6. `response` (quantitative)
+
+# Exploring the data set
+
+In order to explore the data set and perform initial analyses, we have to read it (with `R`) first. Provided that the `.csv` file is saved within the `datasets/` folder, one can read the file in the following way.
+
+```{r}
+col.names <- c('var1', 'var2', 'var3', 'var4', 'var5', 'var6', 'response')
+data <- read.csv(file = 'datasets/data.csv', header = FALSE, sep = ',', col.names = col.names)
+head(data, 5)
+```
+
+Now, let's see a summary of our data.
+
+```{r}
+summary(data)
+```
+
+There are no missing values so that we can jump in into the exploratory analyses. However, since we want to use most information from this data set, it is not easy to visualize how `strength` can be written as a function of more than two variables at the same time. But it might be useful to see how variables are correlated. To do this, we can use the `scatterplotMatrix()` function from the `car` package, and the `corrplot.mixed()` function from the `corrplot` package.
+
+```{r}
+library('car')
+
+scatterplotMatrix(data)
+```
+
+Specially when there are too many variables or too many data points per plot, it might be difficult to analyse all the details, but from the above plot we can have a rough idea on how each variable can be written as a function of others.
+
+```{r}
+library('corrplot')
+
+corrplot.mixed(cor(data))
+```
+
+However, from the above plot we may have clearer information about the correlation between pair of variables. For instance, `var1` and `var3` are highly correlated, as well as `var5` and `var6`, `var5` and `response`, and `var6` and `response`. This information can help us having an idea on which attributes better explain the dependent variable.
+
+# Fitting a model
+
+Our very first task will be fitting a model with all variables so that we can try to explain how the response variable relates to the covariates. We can do this in the following way.
+
+```{r}
+model <- lm(formula = response ~ ., data = data)
+summary(model)
+```
+
+From the above summary table, we may see two covariates that might not be significant, namely `var3`, `var4`, and `var6`. As we prefer simpler models over more complex models, provided they have the same performance, let's remove the one with the highest p-value first (`var4`). We can do this using the `update()` function.
+
+```{r}
+model2 <- update(model, ~. - var4)
+summary(model2)
+```
+
+Now, let's remove `coarse_aggregate`.
+
+```{r}
+model3 <- update(model2, ~. - var3)
+summary(model3)
+```
+
+
+Although `var6` has a p-value of `0.0276` and we already know that it is highly correlated with `var5`, let's keep it for now. However, in order to have sufficiently simpler models, we can also compute and analyse the Variance Inflation Factor (VIF), which is a **measure of the amount of multicollinearity in a set of multiple regression variables**. According to [this page](https://www.investopedia.com/terms/v/variance-inflation-factor.asp) *the VIF for a regression model variable is equal to the ratio of the overall model variance to the variance of a model that includes only that single independent variable. This ratio is calculated for each independent variable. A high VIF indicates that the associated independent variable is highly collinear with the other variables in the model*. Also, as a rule of thumb, we can exclude variables with VIF greater than 2, provided we do this for one variable at a time. To do this, we can use the `vif()` function from the `car` package.
+
+```{r}
+vif(model3)
+```
+
+As we expected, `var6` can be excluded from our model.
+
+```{r}
+model4 <- update(model3, ~. - var6)
+vif(model4)
+summary(model4)
+```
+
+Alternatively, we can do this model selection procedure according to another criteria, namely Akaike Information Criterion (AIC), which is used for evaluating how well a model fits the data it was generated from. AIC is used to compare different possible models and determine which one is the best fit for the data [(reference)](https://www.scribbr.com/statistics/akaike-information-criterion/). In `R`, we can use the `stepAIC()` function from the `MASS` package to automatize this procedure.
+
+```{r}
+library('MASS')
+
+(modelAIC <- stepAIC(model, direction = 'both'))
+summary(modelAIC)
+vif(modelAIC)
+```
+
+However, notice that `stepAIC()` only removed `var4`, and when we compute the VIF, we see that we can still have problems with multicollinearity (which might generate high variance of the estimated coefficients). Now, removing the variables with high VIF, we have
+
+```{r}
+modelAIC2 <- update(modelAIC, ~. - var6)
+vif(modelAIC2)
+modelAIC3 <- update(modelAIC2, ~. - var3)
+vif(modelAIC3)
+```
+
+Which is the same model as before. We will take this as our minimal model.
+
+However, we still have to do a residual analysis. For doing this, we will do the "Residuals vs Fitted" and "Normal Q-Q" plots and run the appropriate tests, as before.
+
+```{r}
+plot(model4, which = c(1, 2))
+```
+
+From the plots, the assumptions of equal variance and normality for the residuals seem to hold. However, as fewer data points make the visual analysis difficult, it is also important to run the tests, namely, `ncvTest()` and `shapiro.test()` for the residuals (`resid()`).
+
+```{r}
+ncvTest(model4)
+shapiro.test(resid(model4))
+```
+
+From the tests results, we fail to reject the null hypotheses---meaning that there is no evidence from the data that the assumptions of equal variance and normality for the residuals do not hold.
+
+Our final model is
+
+\begin{align*}
+\texttt{response}_i &= `r round(model$coefficients[[1]], 3)` + `r round(model$coefficients[[2]], 3)`\texttt{var1}_i + `r round(model$coefficients[[3]], 3)`\texttt{var2}_i + `r round(model$coefficients[[4]], 3)`\texttt{var5}_i
+\end{align*}
+
+# Predicting unknown values
+
+Now that we have a "good" fitted model, we can predict the value of `response` for new values of `var1`, `var2`, and `var5`. For instance, we can predict the value of `response`, such that `var1`, `var2` and `var5` are equal to 55, 100, and 70, respectively. We can also include a confidence and a prediction interval.
+
+```{r}
+newdata <- data.frame(var1 = 55, var2 = 100, var5 = 70)
+
+(pred1 <- predict(object = model4, newdata = newdata, interval = 'confidence'))
+(pred2 <- predict(object = model4, newdata = newdata, interval = 'prediction'))
+```
+

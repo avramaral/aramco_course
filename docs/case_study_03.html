@@ -333,6 +333,9 @@ div.tocify {
 <li>
   <a href="case_study_04.html">Case Study 04</a>
 </li>
+<li>
+  <a href="case_study_05.html">Case Study 05</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -358,7 +361,119 @@ div.tocify {
 
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+<p>For this problem, we will analyse data collected in an observational study in a semiconductor manufacturing plant. Data were retrieved from the <a href="https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363"><strong>Applied Statistics and Probability for Engineers</strong> book</a>. You can download the <code>.csv</code> file <a href="./datasets/wire_bond.csv">here</a>. In this plant, the finished semiconductor is wire-bonded to a frame. The variables reported are pull strength (a measure of the amount of force required to break the bond), the wire length, and the height of the die. Thus, the data set contains following the attributes:</p>
+<ol style="list-style-type: decimal">
+<li><code>pull_strength</code> (quantitative)</li>
+<li><code>wire_length</code> (quantitative)</li>
+<li><code>height</code> (quantitative)</li>
+</ol>
+</div>
+<div id="exploring-the-data-set" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Exploring the data set</h1>
+<p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
+<pre class="r"><code>col.names &lt;- c(&#39;pull_strength&#39;, &#39;wire_length&#39;, &#39;height&#39;)
+data &lt;- read.csv(file = &#39;datasets/wire_bond.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
+head(data, 5)</code></pre>
+<pre><code>##   pull_strength wire_length height
+## 1          9.95           2     50
+## 2         24.45           8    110
+## 3         31.75          11    120
+## 4         35.00          10    550
+## 5         25.02           8    295</code></pre>
+<p>Now, let’s see a summary of our data.</p>
+<pre class="r"><code>summary(data)</code></pre>
+<pre><code>##  pull_strength    wire_length        height     
+##  Min.   : 9.60   Min.   : 1.00   Min.   : 50.0  
+##  1st Qu.:17.08   1st Qu.: 4.00   1st Qu.:200.0  
+##  Median :24.45   Median : 8.00   Median :360.0  
+##  Mean   :29.03   Mean   : 8.24   Mean   :331.8  
+##  3rd Qu.:37.00   3rd Qu.:11.00   3rd Qu.:500.0  
+##  Max.   :69.00   Max.   :20.00   Max.   :600.0</code></pre>
+<p>In this case, there are no missing values—which is great. However, since we want to use most information from this data set, it might not be easy to visualize how one attribute (in our case <code>pull_strength</code>) can be written as a function of more than two variables at the same time. Fortunately, we can still plot data in 3D (using the <code>scatterplot3d()</code> function from the <code>scatterplot3d</code> package).</p>
+<pre class="r"><code>library(&#39;scatterplot3d&#39;)
+scatterplot3d(data$wire_length, data$height, data$pull_strength, color = 2, pch = 19, angle = 70)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Also, it is useful to see how variables are correlated. To do this, we can plot (at least) two types of graphs; in this case, we will use the <code>scatterplotMatrix()</code> function from the <code>car</code> package, and the <code>corrplot.mixed()</code> function from the <code>corrplot</code> package to plot the correlation (from <code>cor()</code>) matrix.</p>
+<pre class="r"><code>library(&#39;car&#39;)
+
+scatterplotMatrix(data)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>library(&#39;corrplot&#39;)</code></pre>
+<pre><code>## corrplot 0.92 loaded</code></pre>
+<pre class="r"><code>corrplot.mixed(cor(data))</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>From the second plot, we can see that <code>pull_strength</code> is highly correlated with <code>wire_length</code>, and this relation is detailed in the first plot. These graphs will be even more useful once we have more variables (as we will see in our next problem).</p>
+</div>
+<div id="fitting-a-model" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Fitting a model</h1>
+<p>Our very first task will be fitting a model with all variables so that we can try to explain how <code>pull_strength</code> relates with the other variables. We can do this in the following way.</p>
+<pre class="r"><code>model &lt;- lm(formula = pull_strength ~ ., data = data)
+summary(model)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = pull_strength ~ ., data = data)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -3.865 -1.542 -0.362  1.196  5.841 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 2.263791   1.060066   2.136 0.044099 *  
+## wire_length 2.744270   0.093524  29.343  &lt; 2e-16 ***
+## height      0.012528   0.002798   4.477 0.000188 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.288 on 22 degrees of freedom
+## Multiple R-squared:  0.9811, Adjusted R-squared:  0.9794 
+## F-statistic: 572.2 on 2 and 22 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>As we can see from the summary, for a significance level of <span class="math inline">\(5\%\)</span>, all coefficients are different than zero. Thus, we should keep them (for our next problem, we will try to simplify the model further).</p>
+<p>Once we have the model, a next step would be performing a residual analysis. To do this, we can plot the diagnostic graphs and run the appropriate tests.</p>
+<pre class="r"><code>plot(model, which = c(1, 2))</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-7-1.png" width="672" /><img src="case_study_03_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<p>The plot seems okay, but we still have to do the tests. As a remark, and as extracted from <a href="https://stats.stackexchange.com/questions/239157/what-does-the-residuals-vs-fitted-regression-line-express">this page</a>, “<em>the red line is a LOWESS fit to your residuals vs fitted plot. Basically, it’s smoothing over the points to look for certain kinds of patterns in the residuals. For example, if you fit a linear regression on data that looked like <span class="math inline">\(y = x^2\)</span>, you’d see a noticeable bowed shape</em>”. Regarding the tests, we have the following</p>
+<pre class="r"><code>ncvTest(model)</code></pre>
+<pre><code>## Non-constant Variance Score Test 
+## Variance formula: ~ fitted.values 
+## Chisquare = 0.04524206, Df = 1, p = 0.83156</code></pre>
+<pre class="r"><code>shapiro.test(resid(model))</code></pre>
+<pre><code>## 
+##  Shapiro-Wilk normality test
+## 
+## data:  resid(model)
+## W = 0.95827, p-value = 0.381</code></pre>
+<p>Also, from the test results, we fail to reject the equal variance and normality assumptions, meaning that we have a good model for our data.</p>
+<p>In particular, the model is given by</p>
+<p><span class="math display">\[\begin{align*}
+\texttt{pull_strength}_i &amp;= 2.264 + 2.744\texttt{wire_length}_i + 0.013\texttt{height}_i
+\end{align*}\]</span></p>
+<p>And we can plot the fitted model in the following way</p>
+<pre class="r"><code>plot3d &lt;- scatterplot3d(data$wire_length, data$height, data$pull_strength, color = 2, pch = 19, angle = 70)
+plot3d$plane3d(model)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="predicting-unknown-values" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
+<p>Now that we have a “good” fitted model, we can predict, the value of <code>pull_strength</code> for new values of <code>wire_length</code> and <code>height</code>. For instance, we can predict the value of <code>pull_strength</code>, such that <code>wire_length</code> is equal to 7.5 and 12.5 and <code>height</code> is equal to 150 and 450, respectively. <strong>Notice that your new points must lie within the range for the observed data</strong>, otherwise your model may not be appropriate for predicting extrapolated points.</p>
+<pre class="r"><code>newdata &lt;- data.frame(wire_length = c(7.5, 12.5), height = c(150, 450))
+
+(pred1 &lt;- predict(object = model, newdata = newdata, interval = &#39;confidence&#39;))</code></pre>
+<pre><code>##        fit      lwr      upr
+## 1 24.72499 23.33957 26.11040
+## 2 42.20468 40.92987 43.47948</code></pre>
+<pre class="r"><code>(pred2 &lt;- predict(object = model, newdata = newdata, interval = &#39;prediction&#39;))</code></pre>
+<pre><code>##        fit      lwr      upr
+## 1 24.72499 19.78175 29.66822
+## 2 42.20468 37.29130 47.11805</code></pre>
+<pre class="r"><code>newdata &lt;- cbind(newdata, pull_strength = pred1[, 1])
+data &lt;- rbind(data, newdata)
+
+plot3d &lt;- scatterplot3d(data$wire_length, data$height, data$pull_strength, color = c(rep(2, nrow(data) - 2), 3, 3), pch = 19, angle = 70)
+plot3d$plane3d(model)
+legend(&#39;topleft&#39;, c(&#39;Observed data&#39;, &#39;New data&#39;), col = c(2, 3), pch = 19)</code></pre>
+<p><img src="case_study_03_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>From the above predicted values, notice that this time, we added the confidence interval and the prediction interval. As explained <a href="https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363">Applied Statistics and Probability for Engineers book</a>, “<em>the prediction interval is always wider than the confidence interval. The confidence interval expresses the error in estimating the mean of a distribution, and the prediction interval expresses the error in predicting a future observation from the distribution at the point <span class="math inline">\(\mathbf{x}_0\)</span>. This must include the error in estimating the mean at that point as well as the inherent variability in the random variable <code>wire_length</code> at the same value <span class="math inline">\(\mathbf{x} = \mathbf{x}_0\)</span></em>”.</p>
 </div>
 
 
