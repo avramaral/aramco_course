@@ -12,7 +12,7 @@
 <meta name="author" content="André Victor Ribeiro Amaral" />
 
 
-<title>Case Study 01</title>
+<title>Case Study 02</title>
 
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -356,7 +356,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Case Study 01</h1>
+<h1 class="title toc-ignore">Case Study 02</h1>
 <h4 class="author">André Victor Ribeiro Amaral</h4>
 
 </div>
@@ -408,7 +408,8 @@ summary(hardness)</code></pre>
 <pre class="r"><code>boxplot(hardness ~ sand, data = hardness)</code></pre>
 <p><img src="case_study_02_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <pre class="r"><code>boxplot(hardness ~ carbon, data = hardness)</code></pre>
-<p><img src="case_study_02_files/figure-html/unnamed-chunk-4-2.png" width="672" /> From both plots, it seems like there is a difference in one of the treatments (low doses for both sand and carbon) regarding the hardness of the material. However, we should only analyse the two factors separately if we can conclude that there is no interaction between them, meaning that there is no partial effect of one factor over the other. To see this, let’s use the <code>interaction.plot()</code> function to explore the possible interactions between the factors.</p>
+<p><img src="case_study_02_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+<p>From both plots, it seems like there is a difference in one of the treatments (low doses for both sand and carbon) regarding the hardness of the material. However, we should only analyse the two factors separately if we can conclude that there is no interaction between them, meaning that there is no partial effect of one factor over the other. To see this, let’s use the <code>interaction.plot()</code> function to explore the possible interactions between the factors.</p>
 <pre class="r"><code>interaction.plot(x.factor = hardness$sand, trace.factor = hardness$carbon, response = hardness$hardness)</code></pre>
 <p><img src="case_study_02_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <pre class="r"><code>interaction.plot(x.factor = hardness$carbon, trace.factor = hardness$sand, response = hardness$hardness)</code></pre>
