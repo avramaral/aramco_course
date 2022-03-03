@@ -131,7 +131,7 @@ From the tests results, we fail to reject the null hypotheses---meaning that the
 Our final model is
 
 \begin{align*}
-\texttt{response}_i &= `r round(model$coefficients[[1]], 3)` + `r round(model$coefficients[[2]], 3)`\texttt{var1}_i + `r round(model$coefficients[[3]], 3)`\texttt{var2}_i + `r round(model$coefficients[[4]], 3)`\texttt{var5}_i
+\texttt{response}_i &= `r round(model4$coefficients[[1]], 3)` + `r round(model4$coefficients[[2]], 3)`\texttt{var1}_i + `r round(model4$coefficients[[3]], 3)`\texttt{var2}_i + `r round(model4$coefficients[[4]], 3)`\texttt{var5}_i
 \end{align*}
 
 # Predicting unknown values
