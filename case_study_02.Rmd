@@ -8,6 +8,10 @@ output:
     number_sections: true
 ---
 
+# Objectives {-}
+
+In this case study, we will fit a Two-way ANOVA model, meaning that our dependent variable will be written as a function of two categorical regressor. The objective here will be checking for interaction between the factors, and see how we can interpret the effects in both scenarios, namely, "with interaction" and "with no interaction". To do this, we will fit the model, check the assumptions, interpret it, and predict new values based on this fitted model.
+
 # Introduction
 
 For this problem, we will study how the amount of carbon fiber and sand additions affect the hardness of a certain material. You can download the `.csv` file [here](./datasets/hardness.csv).

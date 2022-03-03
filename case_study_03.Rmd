@@ -8,6 +8,10 @@ output:
     number_sections: true
 ---
 
+# Objectives {-}
+
+In this case study, we will fit a simple linear regression model. Later, we will also include one categorical variable into the model and check for interaction. The objective here will be transform data (if necessary), fit the model, analyse it, and write the fitted equations for the two studied groups. To do this, we will a the model, check the assumptions, re-fit it (if necessary), interpret it, visualize the estimated curves, and predict new values based on this fitted model for different classes for the categorical variable.
+
 # Introduction
 
 For this problem, we will analyse data about the mileage per gallon performances of various cars. The data set was retrieved from [this page](https://archive.ics.uci.edu/ml/datasets/Auto+MPG) (with changes). You can download the `.csv` file [here](./datasets/car.csv).

@@ -8,6 +8,10 @@ output:
     number_sections: true
 ---
 
+# Objectives {-}
+
+In this case study, we will fit a multiple linear regression model. However, different than [before](./case_study_04.html), we will work with more variables. To do so, we will check for correlation among covariates, see how to perform variable selection, fit a model, check the assumptions, interpret it, and predict (and plot) new values based on this fitted model. When in higher dimension, visualization is difficult (and unnecessary for most cases).
+
 # Introduction
 
 For this problem, we will analyse a data set with 6 variable (1 response variable + 6 covariates). Although their meaning may not be stated, we will see how important feature selection is when performing multiple regression analysis.  You can download the `.csv` file [here](./datasets/data.csv). The data set contains following the variables:

@@ -8,6 +8,10 @@ output:
     number_sections: true
 ---
 
+# Objectives {-}
+
+In this case study, we will fit a One-way ANOVA model, meaning that our dependent variable will be written as a function of one categorical regressor. The objective here will be checking whether the treatment has an effect on the response variable. To do this, we will fit the model, check the assumptions, interpret it, and predict new values based on this fitted model.
+
 # Introduction
 
 For this problem, we will analyse data about the the tensile strength of Portland cement. Four different mixing techniques were tested and the resulting tensile strength was measured. You can download the `.csv` file [here](./datasets/tesile_strength.csv).
