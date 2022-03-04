@@ -8,6 +8,156 @@ output:
     number_sections: true
 ---
 
+# Objectives {-}
+
+In this case study, we will fit a logistic regression model. As this is the first example of this kind, we will see the basics on how to interpret the fitted model and how to visualize the results. In the next case study, we will see more on how to use logistic regression for classification problems.
+
 # Introduction
 
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+For this problem, we will analyse data collected on launch temperature and O-ring failure for the 24 Space Shuttle launches prior to the Challenger disaster of January 1986. Data were retrieved from the [**Applied Statistics and Probability for Engineers** book](https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363). You can download the `.csv` file [here](./datasets/wire_bond.csv). The data set contains the following variables:
+
+1. `temperature` (quantitative)
+2. `oRing_fail` (binary): `1` means that at least one O-ring failure had occurred on that launch; and `0`, otherwise.
+
+## Logistic Regression
+
+Since this case study is slightly different from the previous ones, let's start with a review of what a logistic regression model is. 
+
+The logistic regression model is based on the Bernoulli distribution, which has only two values, 0 and 1, and one parameter, $\theta$, the probability of success. That is,
+
+$$
+\mathbb{P}(Y = y) = \theta^{y} (1 - \theta)^{1 - y}, ~ y = 0, 1.
+$$
+
+Also, $\mathbb{E}(Y) = \theta$ and $\text{Var}(Y) = \theta \cdot (1 - \theta)$.
+
+In this case, we assume that $\theta(\mathbf{x})$ depends on the values of $\mathbf{x}$ of the regressors through a linear combination $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ for some unknown $\boldsymbol{\beta}$.
+
+However, $\theta(\mathbf{x})$ cannot equal  $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ because $\theta$ is a probability and hence takes values in $[0, 1]$, while the linear combination  $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ takes values in $\mathbb{R}$. Thus, we need a transformation to map these two expressions. In our case, we will choose the `logit` function, that is,
+
+$$
+\texttt{logit}(\theta(\mathbf{x})) = \log\left(\frac{\theta(\mathbf{x})}{1 - \theta(\mathbf{x})}\right)
+$$
+
+```{r}
+logit <- function (x) { log(x / (1 - x)) }
+x <- seq(0.01, 0.99, 0.01)
+y <- sapply(x, logit)
+plot(x = x, y = y, xlab = 'x', ylab = 'logit(x)', type = 'l')
+```
+
+Thus, we can always write $\theta(\mathbf{x})$ as
+
+$$
+\theta(\mathbf{x}) = g^{-1}(\mathbf{x}^{\text{T}}\boldsymbol{\beta}) = \frac{1}{1 + \exp^{-\mathbf{x}^{\text{T}}\boldsymbol{\beta}}},
+$$
+
+such that $g$ is the `logit` transformation.
+
+# Exploring the data set
+
+In order to explore the data set and perform initial analyses, we have to read it (with `R`) first. Provided that the `.csv` file is saved within the `datasets/` folder, one can read the file in the following way.
+
+```{r}
+col.names <- c('temperature', 'oRing_fail')
+oring <- read.csv(file = 'datasets/oring.csv', header = FALSE, sep = ',', col.names = col.names)
+head(oring, 5)
+```
+
+Now, let's see a summary of our data.
+
+```{r}
+summary(oring)
+```
+
+However, as `oRing_fail` is being interpreted as numeric, we have to convert it to factor (categorical variable) before conducting any analysis.
+
+```{r}
+oring$oRing_fail <- as.factor(oring$oRing_fail)
+summary(oring)
+```
+
+Now, we can graph the data using the `plot` command for the `oring` data set.
+
+```{r}
+plot(x = oring$temperature, y = as.numeric(as.character(oring$oRing_fail)))
+```
+
+The above plot is not very interesting since we do not have much data, but we can observe, for instance, that failures have occurred at lower temperature ($< 60$) with few exceptions. But now, we can fit our model.
+
+# Fitting a model
+
+Although we did not say this before, the logistic regression (as the linear regression) are just special cases of a class of models named Generalized Linear Models (GLM), and to fit such a model, we will use the `glm()` function from base `R`. We can see the function help by entering the `?glm` command.
+
+```{r}
+model <- glm(formula = oRing_fail ~ temperature, data = oring, family = binomial(link = 'logit')) # with logit link function
+summary(model)
+```
+
+The above summary must be interpreted in a similar as before. However, recall that the estimates and their standard errors are in `logits`. That is, 
+
+\begin{align*}
+\theta(\mathbf{x}) = \frac{1}{1 + \exp^{-(`r round(model$coefficients[1], 3)` `r round(model$coefficients[2], 3)`\texttt{temperature})}}.
+\end{align*}
+
+Also, we can plot our fitted model.
+
+```{r}
+xx <- seq(50, 85, 0.1)
+yy <- predict(model, data.frame(temperature = xx), type = 'response') 
+# logistic_transf <- function (x) { 1 / (1 + exp(-x)) }
+# yy <- sapply(X = yy, FUN = logistic_transf)
+plot(x = oring$temperature, y = as.numeric(as.character(oring$oRing_fail)), pch = 19, col = 'red')
+lines(xx, yy, col = 'blue')
+```
+
+**Remark:** The following part is optional.
+
+However, it might difficult to know how good the fit of the model is when data are shown only as 0s and 1s. In this case, we will divide the ranges of temperatures into three, count how many success (in this case, a success is having a failure for the O-ring) and failures, calculate the main proportion incidence in each third, $\theta$, and add these estimates as points along with their standard error bars $\sqrt{\theta(1 - \theta)/n}$. Regarding the standard error bars, recall that, if $Y_i \sim Bernoulli(\theta)$, $\forall i$, then $\text{Var}(\bar{\theta}) = \text{Var}(\sum Y_i / n) = \theta(1 - \theta)/n$.
+
+To do this, we obtain the break points for the `temperature`, and count the number of 1s in each interval.
+```{r}
+(tp <- cut(oring$temperature, 3))
+tapply(as.numeric(as.character(oring$oRing_fail)), tp, sum)
+```
+
+Next, based on the total number of cases in each interval (`table(tp)`), we can compute the probability of success by dividing the number of success by the number of cases.
+
+```{r}
+table(tp)
+tapply(as.numeric(as.character(oring$oRing_fail)), tp, sum) / table(tp)
+```
+
+Then, we can do the plot. The following piece of code puts everything together.
+
+```{r}
+xx <- seq(50, 85, 0.1)
+yy <- predict(model, data.frame(temperature = xx), type = 'response') 
+plot(x = oring$temperature, y = as.numeric(as.character(oring$oRing_fail)), xlab = 'temperature', ylab = 'oRing_fail', pch = 19, col = 'red')
+lines(xx, yy, col = 'blue')
+
+delta_temp <- (max(oring$temperature) - min(oring$temperature)) / 3
+left <- min(oring$temperature) + delta_temp / 2
+mid <- left + delta_temp
+right <- mid + delta_temp
+lmr <- c(left, mid, right)
+tp <- cut(oring$temperature, 3)
+mean_prop <- as.vector(tapply(as.numeric(as.character(oring$oRing_fail)), tp, sum) / table(tp))
+se <- sqrt(mean_prop * (1 - mean_prop) / table(tp))
+
+points(lmr, mean_prop, pch = 16, col = 'magenta')
+for (i in 1:3) lines(c(lmr[i], lmr[i]), c(mean_prop[i] + se[i], mean_prop[i] - se[i]), col = 'magenta')
+```
+
+From the above plot, we can see that, our fitted model (excepted, maybe, for low temperatures) describes well the data.
+
+# Predicting unknown values
+
+The actual temperature at the Challenger launch was 31∘F. Although our model may not give us good predictions for such temperature (it is way out of our observed range of values), we can compute the probability of observing at least one O-ring failure during the launch in the following way
+
+```{r}
+newdata <- data.frame(temperature = 35)
+predict(model, newdata = newdata, type = 'response')
+```
+
+What conclusions can you take from such result?

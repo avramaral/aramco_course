@@ -16,7 +16,7 @@ In this case study, we will fit a One-way ANOVA model, meaning that our dependen
 
 For this problem, we will analyse data about the the tensile strength of Portland cement. Four different mixing techniques were tested and the resulting tensile strength was measured. You can download the `.csv` file [here](./datasets/tesile_strength.csv).
 
-This data set contains following the variables:
+This data set contains the following variables:
 
 1. `mixingType` (multi-valued discrete)
 2. `strength` (continuous)

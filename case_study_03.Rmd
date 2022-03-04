@@ -16,7 +16,7 @@ In this case study, we will fit a simple linear regression model. Later, we will
 
 For this problem, we will analyse data about the mileage per gallon performances of various cars. The data set was retrieved from [this page](https://archive.ics.uci.edu/ml/datasets/Auto+MPG) (with changes). You can download the `.csv` file [here](./datasets/car.csv).
 
-This data set contains following the variables:
+This data set contains the following variables:
 
 1. `mpg` (continuous)
 2. `cylinders` (multi-valued discrete)

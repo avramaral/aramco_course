@@ -16,11 +16,11 @@ In this case study, we will fit a Two-way ANOVA model, meaning that our dependen
 
 For this problem, we will study how the amount of carbon fiber and sand additions affect the hardness of a certain material. You can download the `.csv` file [here](./datasets/hardness.csv).
 
-This data set contains following the variables:
+This data set contains the following variables:
 
 1. `sand` (multi-valued discrete)
 2. `carbon` (multi-valued discrete)
-2. `hardness` (continuous)
+3. `hardness` (continuous)
 
 # Exploring the data set
 

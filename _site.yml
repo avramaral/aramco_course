@@ -15,6 +15,8 @@ navbar:
       href: case_study_05.html
     - text: 'Case Study 06'
       href: case_study_06.html
+    - text: 'Case Study 07'
+      href: case_study_07.html
   right:
     - icon: fa-globe
       href: https://avramaral.github.io/

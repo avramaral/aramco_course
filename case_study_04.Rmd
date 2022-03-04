@@ -14,11 +14,11 @@ In this case study, we will fit a multiple linear regression model. This example
 
 # Introduction
 
-For this problem, we will analyse data collected in an observational study in a semiconductor manufacturing plant. Data were retrieved from the [**Applied Statistics and Probability for Engineers** book](https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363). You can download the `.csv` file [here](./datasets/wire_bond.csv). In this plant, the finished semiconductor is wire-bonded to a frame. The variables reported are pull strength (a measure of the amount of force required to break the bond), the wire length, and the height of the die. Thus, the data set contains following the variables:
+For this problem, we will analyse data collected in an observational study in a semiconductor manufacturing plant. Data were retrieved from the [**Applied Statistics and Probability for Engineers** book](https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363). You can download the `.csv` file [here](./datasets/wire_bond.csv). In this plant, the finished semiconductor is wire-bonded to a frame. The variables reported are pull strength (a measure of the amount of force required to break the bond), the wire length, and the height of the die. Thus, the data set contains the following variables:
 
 1. `pull_strength` (quantitative)
 2. `wire_length` (quantitative)
-2. `height` (quantitative)
+3. `height` (quantitative)
 
 # Exploring the data set
 

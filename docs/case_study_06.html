@@ -339,6 +339,9 @@ div.tocify {
 <li>
   <a href="case_study_06.html">Case Study 06</a>
 </li>
+<li>
+  <a href="case_study_07.html">Case Study 07</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -362,9 +365,166 @@ div.tocify {
 </div>
 
 
+<div id="objectives" class="section level1 unnumbered">
+<h1 class="unnumbered">Objectives</h1>
+<p>In this case study, we will fit a logistic regression model. As this is the first example of this kind, we will see the basics on how to interpret the fitted model and how to visualize the results. In the next case study, we will see more on how to use logistic regression for classification problems.</p>
+</div>
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+<p>For this problem, we will analyse data collected on launch temperature and O-ring failure for the 24 Space Shuttle launches prior to the Challenger disaster of January 1986. Data were retrieved from the <a href="https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363"><strong>Applied Statistics and Probability for Engineers</strong> book</a>. You can download the <code>.csv</code> file <a href="./datasets/wire_bond.csv">here</a>. The data set contains the following variables:</p>
+<ol style="list-style-type: decimal">
+<li><code>temperature</code> (quantitative)</li>
+<li><code>oRing_fail</code> (binary): <code>1</code> means that at least one O-ring failure had occurred on that launch; and <code>0</code>, otherwise.</li>
+</ol>
+<div id="logistic-regression" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Logistic Regression</h2>
+<p>Since this case study is slightly different from the previous ones, let’s start with a review of what a logistic regression model is.</p>
+<p>The logistic regression model is based on the Bernoulli distribution, which has only two values, 0 and 1, and one parameter, <span class="math inline">\(\theta\)</span>, the probability of success. That is,</p>
+<p><span class="math display">\[
+\mathbb{P}(Y = y) = \theta^{y} (1 - \theta)^{1 - y}, ~ y = 0, 1.
+\]</span></p>
+<p>Also, <span class="math inline">\(\mathbb{E}(Y) = \theta\)</span> and <span class="math inline">\(\text{Var}(Y) = \theta \cdot (1 - \theta)\)</span>.</p>
+<p>In this case, we assume that <span class="math inline">\(\theta(\mathbf{x})\)</span> depends on the values of <span class="math inline">\(\mathbf{x}\)</span> of the regressors through a linear combination <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> for some unknown <span class="math inline">\(\boldsymbol{\beta}\)</span>.</p>
+<p>However, <span class="math inline">\(\theta(\mathbf{x})\)</span> cannot equal <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> because <span class="math inline">\(\theta\)</span> is a probability and hence takes values in <span class="math inline">\([0, 1]\)</span>, while the linear combination <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> takes values in <span class="math inline">\(\mathbb{R}\)</span>. Thus, we need a transformation to map these two expressions. In our case, we will choose the <code>logit</code> function, that is,</p>
+<p><span class="math display">\[
+\texttt{logit}(\theta(\mathbf{x})) = \log\left(\frac{\theta(\mathbf{x})}{1 - \theta(\mathbf{x})}\right)
+\]</span></p>
+<pre class="r"><code>logit &lt;- function (x) { log(x / (1 - x)) }
+x &lt;- seq(0.01, 0.99, 0.01)
+y &lt;- sapply(x, logit)
+plot(x = x, y = y, xlab = &#39;x&#39;, ylab = &#39;logit(x)&#39;, type = &#39;l&#39;)</code></pre>
+<p><img src="case_study_06_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>Thus, we can always write <span class="math inline">\(\theta(\mathbf{x})\)</span> as</p>
+<p><span class="math display">\[
+\theta(\mathbf{x}) = g^{-1}(\mathbf{x}^{\text{T}}\boldsymbol{\beta}) = \frac{1}{1 + \exp^{-\mathbf{x}^{\text{T}}\boldsymbol{\beta}}},
+\]</span></p>
+<p>such that <span class="math inline">\(g\)</span> is the <code>logit</code> transformation.</p>
+</div>
+</div>
+<div id="exploring-the-data-set" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Exploring the data set</h1>
+<p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
+<pre class="r"><code>col.names &lt;- c(&#39;temperature&#39;, &#39;oRing_fail&#39;)
+oring &lt;- read.csv(file = &#39;datasets/oring.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
+head(oring, 5)</code></pre>
+<pre><code>##   temperature oRing_fail
+## 1          53          1
+## 2          56          1
+## 3          57          1
+## 4          63          0
+## 5          66          0</code></pre>
+<p>Now, let’s see a summary of our data.</p>
+<pre class="r"><code>summary(oring)</code></pre>
+<pre><code>##   temperature      oRing_fail    
+##  Min.   :53.00   Min.   :0.0000  
+##  1st Qu.:67.00   1st Qu.:0.0000  
+##  Median :70.00   Median :0.0000  
+##  Mean   :69.92   Mean   :0.2917  
+##  3rd Qu.:75.25   3rd Qu.:1.0000  
+##  Max.   :81.00   Max.   :1.0000</code></pre>
+<p>However, as <code>oRing_fail</code> is being interpreted as numeric, we have to convert it to factor (categorical variable) before conducting any analysis.</p>
+<pre class="r"><code>oring$oRing_fail &lt;- as.factor(oring$oRing_fail)
+summary(oring)</code></pre>
+<pre><code>##   temperature    oRing_fail
+##  Min.   :53.00   0:17      
+##  1st Qu.:67.00   1: 7      
+##  Median :70.00             
+##  Mean   :69.92             
+##  3rd Qu.:75.25             
+##  Max.   :81.00</code></pre>
+<p>Now, we can graph the data using the <code>plot</code> command for the <code>oring</code> data set.</p>
+<pre class="r"><code>plot(x = oring$temperature, y = as.numeric(as.character(oring$oRing_fail)))</code></pre>
+<p><img src="case_study_06_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>The above plot is not very interesting since we do not have much data, but we can observe, for instance, that failures have occurred at lower temperature (<span class="math inline">\(&lt; 60\)</span>) with few exceptions. But now, we can fit our model.</p>
+</div>
+<div id="fitting-a-model" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Fitting a model</h1>
+<p>Although we did not say this before, the logistic regression (as the linear regression) are just special cases of a class of models named Generalized Linear Models (GLM), and to fit such a model, we will use the <code>glm()</code> function from base <code>R</code>. We can see the function help by entering the <code>?glm</code> command.</p>
+<pre class="r"><code>model &lt;- glm(formula = oRing_fail ~ temperature, data = oring, family = binomial(link = &#39;logit&#39;)) # with logit link function
+summary(model)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = oRing_fail ~ temperature, family = binomial(link = &quot;logit&quot;), 
+##     data = oring)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.2125  -0.8253  -0.4706   0.5907   2.0512  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept) 10.87535    5.70291   1.907   0.0565 .
+## temperature -0.17132    0.08344  -2.053   0.0400 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 28.975  on 23  degrees of freedom
+## Residual deviance: 23.030  on 22  degrees of freedom
+## AIC: 27.03
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<p>The above summary must be interpreted in a similar as before. However, recall that the estimates and their standard errors are in <code>logits</code>. That is,</p>
+<p><span class="math display">\[\begin{align*}
+\theta(\mathbf{x}) = \frac{1}{1 + \exp^{-(10.875 -0.171\texttt{temperature})}}.
+\end{align*}\]</span></p>
+<p>Also, we can plot our fitted model.</p>
+<pre class="r"><code>xx &lt;- seq(50, 85, 0.1)
+yy &lt;- predict(model, data.frame(temperature = xx), type = &#39;response&#39;) 
+# logistic_transf &lt;- function (x) { 1 / (1 + exp(-x)) }
+# yy &lt;- sapply(X = yy, FUN = logistic_transf)
+plot(x = oring$temperature, y = as.numeric(as.character(oring$oRing_fail)), pch = 19, col = &#39;red&#39;)
+lines(xx, yy, col = &#39;blue&#39;)</code></pre>
+<p><img src="case_study_06_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><strong>Remark:</strong> The following part is optional.</p>
+<p>However, it might difficult to know how good the fit of the model is when data are shown only as 0s and 1s. In this case, we will divide the ranges of temperatures into three, count how many success (in this case, a success is having a failure for the O-ring) and failures, calculate the main proportion incidence in each third, <span class="math inline">\(\theta\)</span>, and add these estimates as points along with their standard error bars <span class="math inline">\(\sqrt{\theta(1 - \theta)/n}\)</span>. Regarding the standard error bars, recall that, if <span class="math inline">\(Y_i \sim Bernoulli(\theta)\)</span>, <span class="math inline">\(\forall i\)</span>, then <span class="math inline">\(\text{Var}(\bar{\theta}) = \text{Var}(\sum Y_i / n) = \theta(1 - \theta)/n\)</span>.</p>
+<p>To do this, we obtain the break points for the <code>temperature</code>, and count the number of 1s in each interval.</p>
+<pre class="r"><code>(tp &lt;- cut(oring$temperature, 3))</code></pre>
+<pre><code>##  [1] (53,62.3]   (53,62.3]   (53,62.3]   (62.3,71.7] (62.3,71.7] (62.3,71.7]
+##  [7] (62.3,71.7] (62.3,71.7] (62.3,71.7] (62.3,71.7] (62.3,71.7] (62.3,71.7]
+## [13] (62.3,71.7] (62.3,71.7] (71.7,81]   (71.7,81]   (71.7,81]   (71.7,81]  
+## [19] (71.7,81]   (71.7,81]   (71.7,81]   (71.7,81]   (71.7,81]   (71.7,81]  
+## Levels: (53,62.3] (62.3,71.7] (71.7,81]</code></pre>
+<pre class="r"><code>tapply(as.numeric(as.character(oring$oRing_fail)), tp, sum)</code></pre>
+<pre><code>##   (53,62.3] (62.3,71.7]   (71.7,81] 
+##           3           3           1</code></pre>
+<p>Next, based on the total number of cases in each interval (<code>table(tp)</code>), we can compute the probability of success by dividing the number of success by the number of cases.</p>
+<pre class="r"><code>table(tp)</code></pre>
+<pre><code>## tp
+##   (53,62.3] (62.3,71.7]   (71.7,81] 
+##           3          11          10</code></pre>
+<pre class="r"><code>tapply(as.numeric(as.character(oring$oRing_fail)), tp, sum) / table(tp)</code></pre>
+<pre><code>##   (53,62.3] (62.3,71.7]   (71.7,81] 
+##   1.0000000   0.2727273   0.1000000</code></pre>
+<p>Then, we can do the plot. The following piece of code puts everything together.</p>
+<pre class="r"><code>xx &lt;- seq(50, 85, 0.1)
+yy &lt;- predict(model, data.frame(temperature = xx), type = &#39;response&#39;) 
+plot(x = oring$temperature, y = as.numeric(as.character(oring$oRing_fail)), xlab = &#39;temperature&#39;, ylab = &#39;oRing_fail&#39;, pch = 19, col = &#39;red&#39;)
+lines(xx, yy, col = &#39;blue&#39;)
+
+delta_temp &lt;- (max(oring$temperature) - min(oring$temperature)) / 3
+left &lt;- min(oring$temperature) + delta_temp / 2
+mid &lt;- left + delta_temp
+right &lt;- mid + delta_temp
+lmr &lt;- c(left, mid, right)
+tp &lt;- cut(oring$temperature, 3)
+mean_prop &lt;- as.vector(tapply(as.numeric(as.character(oring$oRing_fail)), tp, sum) / table(tp))
+se &lt;- sqrt(mean_prop * (1 - mean_prop) / table(tp))
+
+points(lmr, mean_prop, pch = 16, col = &#39;magenta&#39;)
+for (i in 1:3) lines(c(lmr[i], lmr[i]), c(mean_prop[i] + se[i], mean_prop[i] - se[i]), col = &#39;magenta&#39;)</code></pre>
+<p><img src="case_study_06_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>From the above plot, we can see that, our fitted model (excepted, maybe, for low temperatures) describes well the data.</p>
+</div>
+<div id="predicting-unknown-values" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
+<p>The actual temperature at the Challenger launch was 31∘F. Although our model may not give us good predictions for such temperature (it is way out of our observed range of values), we can compute the probability of observing at least one O-ring failure during the launch in the following way</p>
+<pre class="r"><code>newdata &lt;- data.frame(temperature = 35)
+predict(model, newdata = newdata, type = &#39;response&#39;)</code></pre>
+<pre><code>##         1 
+## 0.9924538</code></pre>
+<p>What conclusions can you take from such result?</p>
 </div>
 
 

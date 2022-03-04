@@ -14,7 +14,7 @@ In this case study, we will fit a multiple linear regression model. However, dif
 
 # Introduction
 
-For this problem, we will analyse a data set with 6 variable (1 response variable + 6 covariates). Although their meaning may not be stated, we will see how important feature selection is when performing multiple regression analysis.  You can download the `.csv` file [here](./datasets/data.csv). The data set contains following the variables:
+For this problem, we will analyse a data set with 6 variable (1 response variable + 6 covariates). Although their meaning may not be stated, we will see how important feature selection is when performing multiple regression analysis.  You can download the `.csv` file [here](./datasets/data.csv). The data set contains the following variables:
 
 1. `var1` (quantitative)
 2. `var2` (quantitative)
