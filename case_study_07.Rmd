@@ -10,8 +10,167 @@ output:
 
 # Objectives {-}
 
-In this case study, ...
+As [before](./case_study_06.html), in this case study, we will fit a logistic regression model. However, this time we will be concerning in using logistic regression for a classification problem. To do this, we will fit and interpret the model, but we will also use it to predict the class of a newly observed cases. Moreover, to select an appropriate threshold for classifying new cases, we will deal with the Receiver Operating Characteristic (ROC) curve.
 
 # Introduction
 
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+For this problem, we will analyse data about office workers' performance. The objective is classifying them as `1`, if they deserve to be promoted, and `0`, otherwise. The data set was retrieved from [this page](https://datahack.analyticsvidhya.com/contest/wns-analytics-hackathon-2018-1/) (with changes). You can download the `.csv` file [here](./datasets/hr.csv).
+
+This data set contains the following variables:
+
+1. `gender` (categorical): female (F) or male (M)
+2. `no_of_courses` (numeric): number of courses completed in the previous year
+3. `age` (numeric)
+4. `previous_year_rating` (numeric): employee rating for the previous year
+5. `length_of_service` (numeric): length of service in years
+6. `KPIs_met_greater_80` (categorical): if percent of Key Performance Indicators (KPIs) is greater than 80%, then `1`; otherwise, `0`
+7. `awards_won` (categorical): if won an award during the previous year, then `1`; otherwise, `0`
+8. `avg_training_score` (numeric): average score in current training evaluation
+9. `is_promoted` (categorical): recommended for promotion
+
+## Logistic Regression for Classification
+
+Since the output of a logistic model is a probability $\theta$ that represents the conditional probability that the variable $Y$ is equal to 1 given the value of the covariates $\mathbf{X}$, we can use this probability to, given a threshold $\theta_0$, classify $\mathbf{X} = \mathbf{x}_0$ as `1`, if $\hat{\theta}(\mathbf{x}_0) > \theta_0$, and `0`, otherwise.
+
+In this sense, one important tool we will use is named **Confusion Matrix**. For instance, we may have 
+
+|| Predicted `0` | Predicted `1`  | Total |
+|-------------|-------------|-----|-|
+| **Observed** `0`| 40 | 20 | **60** |
+| **Observed** `1`| 15 | 50 | **65** |
+|**Total** | **55** | **70** | **125** |
+
+From the above table, we are interested in the following quantities
+
+- **True positives (TP)**: model predict `1` and the values were actually `1` (e.g, 50).
+- **True negatives (TN)**: model predict `0` and the values were actually `0` (e.g, 40).
+- **False positives (FP)**: model predict `1` and the values were actually `0` (e.g, 20).
+- **False negatives (FN)**: model predict `0` and the values were actually `1` (e.g, 15).
+
+Also, and based on these quantities, we can determine the $\texttt{accuracy}$in the following way
+
+$$
+\texttt{accuracy} = \frac{\texttt{TP} + \texttt{TN}}{\texttt{total}},
+$$
+which describes how often the classifier is correct. In our example, $\texttt{accuracy} = 90/125 = 0.72$.
+
+Other measures of accuracy include 
+
+- **Sensitivity**: when the true result is `1`, how often the model predicts `1`? ($\texttt{TP}/(\texttt{TP} + \texttt{FN})$) 
+- **Specificity**: when the true result is `0`, how often the model predicts `0`? ($\texttt{TN}/(\texttt{TN} + \texttt{FP})$)
+
+# Exploring the data set
+
+In order to explore the data set and perform initial analyses, we have to read it (with `R`) first. Provided that the `.csv` file is saved within the `datasets/` folder, one can read the file in the following way.
+
+```{r}
+col.names <- c('gender', 'no_of_courses', 'age', 'previous_year_rating', 'length_of_service', 'KPIs_met_greater_80', 'awards_won', 'avg_training_score', 'is_promoted')
+hr <- read.csv(file = 'datasets/hr.csv', header = FALSE, sep = ',', col.names = col.names)
+head(hr, 5)
+```
+
+Now, let's see a summary of our data.
+
+```{r}
+summary(hr)
+```
+
+However, as some variables are being interpreted as numeric, we have to convert them to factor (categorical variable) before conducting any analysis.
+
+```{r}
+hr$gender <- factor(hr$gender)
+hr$KPIs_met_greater_80 <- factor(hr$KPIs_met_greater_80)
+hr$awards_won <- factor(hr$awards_won)
+hr$is_promoted <- factor(hr$is_promoted)
+summary(hr)
+```
+
+Now, we can fit our model.
+
+# Fitting a model
+
+However, before fitting our model, we will split our data into `training` and `testing` data sets. To do this, we can use the `sample.split()` function from the `caTools` package.
+```{r}
+library('caTools')
+set.seed(1)
+split <- sample.split(hr$is_promoted, SplitRatio = 0.75)
+
+hrTraining <- subset(hr, split == TRUE)
+hrTesting  <- subset(hr, split == FALSE)
+
+dim(hrTraining)
+dim(hrTesting)
+```
+
+
+In this case, we will fit a model with all available variables.
+
+```{r}
+
+model <- glm(formula = is_promoted ~ ., data = hrTraining, family = binomial(link = 'logit')) # with logit link function
+summary(model)
+```
+
+Now, we can use our fitted model to do predictions for `training` data set. Our objective here is to find a reasonable value for the threshold ($\theta_0$).
+
+```{r}
+predictTraining <- predict(model, type = 'response')
+summary(predictTraining)
+tapply(predictTraining, hrTraining$is_promoted, mean)
+```
+
+These results show that for the true `is_promoted = 1` the average predicted probability is $0.19$, while for the true `is_promoted = 0` the average predicted probability is $0.08$. In this case, we want to choose a threshold $\theta_0$, such that the prediction error (according to the above definitions) is as small as possible.
+
+So, let's see the effect of different thresholds on the sensitivity and specificity of the classifier.
+
+```{r}
+# threshold = 0.75
+(tb1 <- table(hrTraining$is_promoted, predictTraining > 0.75))
+print(paste('Sensitivity: ', round(tb1[2, 2] / (tb1[2, 2] + tb1[2, 1]), 3), sep = ''))
+print(paste('Specificity: ', round(tb1[1, 1] / (tb1[1, 1] + tb1[1, 2]), 3), sep = ''))
+# threshold = 0.50
+(tb2 <- table(hrTraining$is_promoted, predictTraining > 0.50))
+print(paste('Sensitivity: ', round(tb2[2, 2] / (tb2[2, 2] + tb2[2, 1]), 3), sep = ''))
+print(paste('Specificity: ', round(tb2[1, 1] / (tb2[1, 1] + tb2[1, 2]), 3), sep = ''))
+# threshold = 0.25
+(tb3 <- table(hrTraining$is_promoted, predictTraining > 0.25))
+print(paste('Sensitivity: ', round(tb3[2, 2] / (tb3[2, 2] + tb3[2, 1]), 3), sep = ''))
+print(paste('Specificity: ', round(tb3[1, 1] / (tb3[1, 1] + tb3[1, 2]), 3), sep = ''))
+```
+
+How can we interpret these results?
+
+Actually, we can see that by increasing the threshold the sensitivity decreases while specificity increases. Alternatively, the contrary happens when we decrease the threshold.
+
+However, instead of testing these values manually, we will plot the Receiver Operating Characteristic (ROC) curve using the `prediction()` and `performance()` functions from the `ROCR` package.
+
+```{r}
+library('ROCR')
+
+# First parameter is the vector of predicted probabilities, and
+# second parameter is the vector of true values.
+ROCRpred <- prediction(predictTraining, hrTraining$is_promoted) 
+
+# Compute the 'true positive rate' and 'false positive rate' for
+# different values of threshold.
+RPCRperf <- performance(ROCRpred, 'tpr', 'fpr')
+
+plot(RPCRperf, colorize = TRUE, print.cutoffs.at = c(0, 0.05, 0.1, 0.5, 1.0))
+```
+
+From the above plot, notice that the `sensitivity` is shown in the `y`-axis, and `1 - specificity` is shown in the `x`-axis. The curve always start at $(0, 0)$ and always ends at $(1, 1)$. At $(0, 0)$, we will not get any false positive points, but we will not identify people who truly deserved to be promoted. On the other hand, at the endpoint we identify all people who deserved to be promoted, but the false positive rate is $1$. Therefore, we want something in the middle (which depends on the problem).
+
+# Predicting unknown values
+
+For a threshold of $0.1$ (meaning that I expect to promote approximately 60\% of people who deserve it, and I am willing to promote 20\% of people who do not deserve it), I have the following results for the `testing` data set.
+
+```{r}
+predictTesting <- predict(model, type = 'response', newdata = hrTesting)
+(tb <- table(hrTesting$is_promoted, predictTesting >= 0.1))
+print(paste('Accuracy: ', round((sum(tb[, 1]) /sum(tb)), 3), sep = ''))
+print(paste('Sensitivity: ', round(tb[2, 2] / (tb[2, 2] + tb[2, 1]), 3), sep = ''))
+print(paste('Specificity: ', round(tb[1, 1] / (tb[1, 1] + tb[1, 2]), 3), sep = ''))
+```
+
+
+

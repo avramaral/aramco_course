@@ -14,7 +14,7 @@ In this case study, we will fit a logistic regression model. As this is the firs
 
 # Introduction
 
-For this problem, we will analyse data collected on launch temperature and O-ring failure for the 24 Space Shuttle launches prior to the Challenger disaster of January 1986. Data were retrieved from the [**Applied Statistics and Probability for Engineers** book](https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363). You can download the `.csv` file [here](./datasets/wire_bond.csv). The data set contains the following variables:
+For this problem, we will analyse data collected on launch temperature and O-ring failure for the 24 Space Shuttle launches prior to the Challenger disaster of January 1986. Data were retrieved from the [**Applied Statistics and Probability for Engineers** book](https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363). You can download the `.csv` file [here](./datasets/oring.csv). The data set contains the following variables:
 
 1. `temperature` (quantitative)
 2. `oRing_fail` (binary): `1` means that at least one O-ring failure had occurred on that launch; and `0`, otherwise.
