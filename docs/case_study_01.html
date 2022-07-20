@@ -14,7 +14,7 @@
 
 <title>Case Study 01</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -63,6 +63,7 @@ if (window.hljs) {
 
 
 
+
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 
@@ -87,6 +88,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -312,12 +316,12 @@ div.tocify {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Exercises in Linear Models</a>
+      <a class="navbar-brand" href="index.html">Linear Models</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -341,6 +345,9 @@ div.tocify {
 </li>
 <li>
   <a href="case_study_07.html">Case Study 07</a>
+</li>
+<li>
+  <a href="case_study_08.html">Case Study 08</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -370,7 +377,7 @@ div.tocify {
 <p>In this case study, we will fit a One-way ANOVA model, meaning that our dependent variable will be written as a function of one categorical regressor. The objective here will be checking whether the treatment has an effect on the response variable. To do this, we will fit the model, check the assumptions, interpret it, and predict new values based on this fitted model.</p>
 </div>
 <div id="introduction" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> Introduction</h1>
+<h1 number="1"><span class="header-section-number">1</span> Introduction</h1>
 <p>For this problem, we will analyse data about the the tensile strength of Portland cement. Four different mixing techniques were tested and the resulting tensile strength was measured. You can download the <code>.csv</code> file <a href="./datasets/tesile_strength.csv">here</a>.</p>
 <p>This data set contains the following variables:</p>
 <ol style="list-style-type: decimal">
@@ -379,7 +386,7 @@ div.tocify {
 </ol>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Exploring the data set</h1>
+<h1 number="2"><span class="header-section-number">2</span> Exploring the data set</h1>
 <p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
 <pre class="r"><code>col.names &lt;- c(&#39;mixingType&#39;, &#39;strength&#39;)
 ts &lt;- read.csv(file = &#39;datasets/tensile_strength.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
@@ -415,7 +422,7 @@ summary(ts)</code></pre>
 <p>First thing to observe is the fact that the boxes have (approximately) the same height, which supports the assumption of equal variances. Also, especially when one focus on groups <code>B</code> and <code>D</code>, one can see a clear difference between treatments, which may suggest that the mixing type has effect on the strength. However, we still have to fit a model and perform the appropriate analyses before concluding anything.</p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> Fitting a model</h1>
+<h1 number="3"><span class="header-section-number">3</span> Fitting a model</h1>
 <p>So let’s start by fitting a linear model for <code>strength</code> as a function of <code>mixingType</code>. We can do this using the <code>lm()</code> function, from <code>base R</code>.</p>
 <pre class="r"><code>model &lt;- lm(formula = strength ~ mixingType, data = ts)</code></pre>
 <p>However, in this case, we are interested in the ANOVA table. To get it, we can use the <code>anova()</code> function for a object returned from the <code>lm()</code> method, as <code>model</code>. Alternatively, we could have used the <code>aov(formula = strength ~ mixingType, data = ts)</code> command.</p>
@@ -527,7 +534,7 @@ model.tables(modAOV)</code></pre>
 <p>So the question is, <strong>if you had to choose a mixing type, which one would you pick?</strong></p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
+<h1 number="4"><span class="header-section-number">4</span> Predicting unknown values</h1>
 <p>As expected, the predicted values for each group will be equal to the estimated means (as computed above). To see this, we can use the <code>predict()</code> function.</p>
 <pre class="r"><code>newdata &lt;- data.frame(mixingType = factor(c(&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;)))
 predict(model, newdata = newdata)</code></pre>

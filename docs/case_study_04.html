@@ -14,7 +14,7 @@
 
 <title>Case Study 04</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -63,6 +63,7 @@ if (window.hljs) {
 
 
 
+
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 
@@ -87,6 +88,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -312,12 +316,12 @@ div.tocify {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Exercises in Linear Models</a>
+      <a class="navbar-brand" href="index.html">Linear Models</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -341,6 +345,9 @@ div.tocify {
 </li>
 <li>
   <a href="case_study_07.html">Case Study 07</a>
+</li>
+<li>
+  <a href="case_study_08.html">Case Study 08</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -370,7 +377,7 @@ div.tocify {
 <p>In this case study, we will fit a multiple linear regression model. This example will be simple, and we will also be able to visualize the estimated surface (most of the time, it is not possible neither important). To do this, we will fit the model, check the assumptions, interpret it, visualize the estimated surface, and predict (and plot) new values based on this fitted model.</p>
 </div>
 <div id="introduction" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> Introduction</h1>
+<h1 number="1"><span class="header-section-number">1</span> Introduction</h1>
 <p>For this problem, we will analyse data collected in an observational study in a semiconductor manufacturing plant. Data were retrieved from the <a href="https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363"><strong>Applied Statistics and Probability for Engineers</strong> book</a>. You can download the <code>.csv</code> file <a href="./datasets/wire_bond.csv">here</a>. In this plant, the finished semiconductor is wire-bonded to a frame. The variables reported are pull strength (a measure of the amount of force required to break the bond), the wire length, and the height of the die. Thus, the data set contains the following variables:</p>
 <ol style="list-style-type: decimal">
 <li><code>pull_strength</code> (quantitative)</li>
@@ -379,7 +386,7 @@ div.tocify {
 </ol>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Exploring the data set</h1>
+<h1 number="2"><span class="header-section-number">2</span> Exploring the data set</h1>
 <p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
 <pre class="r"><code>col.names &lt;- c(&#39;pull_strength&#39;, &#39;wire_length&#39;, &#39;height&#39;)
 data &lt;- read.csv(file = &#39;datasets/wire_bond.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
@@ -415,7 +422,7 @@ scatterplotMatrix(data)</code></pre>
 <p>From the second plot, we can see that <code>pull_strength</code> is highly correlated with <code>wire_length</code>, and this relation is detailed in the first plot. These graphs will be even more useful once we have more variables (as we will see in our next problem).</p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> Fitting a model</h1>
+<h1 number="3"><span class="header-section-number">3</span> Fitting a model</h1>
 <p>Our very first task will be fitting a model with all variables so that we can try to explain how <code>pull_strength</code> relates with the other variables. We can do this in the following way.</p>
 <pre class="r"><code>model &lt;- lm(formula = pull_strength ~ ., data = data)
 summary(model)</code></pre>
@@ -464,7 +471,7 @@ plot3d$plane3d(model)</code></pre>
 <p><img src="case_study_04_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
+<h1 number="4"><span class="header-section-number">4</span> Predicting unknown values</h1>
 <p>Now that we have a “good” fitted model, we can predict, the value of <code>pull_strength</code> for new values of <code>wire_length</code> and <code>height</code>. For instance, we can predict the value of <code>pull_strength</code>, such that <code>wire_length</code> is equal to 7.5 and 12.5 and <code>height</code> is equal to 150 and 450, respectively. <strong>Notice that your new points must lie within the range for the observed data</strong>, otherwise your model may not be appropriate for predicting extrapolated points.</p>
 <pre class="r"><code>newdata &lt;- data.frame(wire_length = c(7.5, 12.5), height = c(150, 450))
 

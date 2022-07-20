@@ -159,5 +159,3 @@ The actual temperature at the Challenger launch was 31∘F. Although our model m
 newdata <- data.frame(temperature = 35)
 predict(model, newdata = newdata, type = 'response')
 ```
-
-What conclusions can you take from such result?

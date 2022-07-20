@@ -14,7 +14,7 @@
 
 <title>Case Study 07</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -63,6 +63,7 @@ if (window.hljs) {
 
 
 
+
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 
@@ -87,6 +88,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -312,12 +316,12 @@ div.tocify {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Exercises in Linear Models</a>
+      <a class="navbar-brand" href="index.html">Linear Models</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -341,6 +345,9 @@ div.tocify {
 </li>
 <li>
   <a href="case_study_07.html">Case Study 07</a>
+</li>
+<li>
+  <a href="case_study_08.html">Case Study 08</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -370,7 +377,7 @@ div.tocify {
 <p>As <a href="./case_study_06.html">before</a>, in this case study, we will fit a logistic regression model. However, this time we will be concerning in using logistic regression for a classification problem. To do this, we will fit and interpret the model, but we will also use it to predict the class of a newly observed cases. Moreover, to select an appropriate threshold for classifying new cases, we will deal with the Receiver Operating Characteristic (ROC) curve.</p>
 </div>
 <div id="introduction" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> Introduction</h1>
+<h1 number="1"><span class="header-section-number">1</span> Introduction</h1>
 <p>For this problem, we will analyse data about office workers’ performance. The objective is classifying them as <code>1</code>, if they deserve to be promoted, and <code>0</code>, otherwise. The data set was retrieved from <a href="https://datahack.analyticsvidhya.com/contest/wns-analytics-hackathon-2018-1/">this page</a> (with changes). You can download the <code>.csv</code> file <a href="./datasets/hr.csv">here</a>.</p>
 <p>This data set contains the following variables:</p>
 <ol style="list-style-type: decimal">
@@ -385,7 +392,7 @@ div.tocify {
 <li><code>is_promoted</code> (categorical): recommended for promotion</li>
 </ol>
 <div id="logistic-regression-for-classification" class="section level2" number="1.1">
-<h2><span class="header-section-number">1.1</span> Logistic Regression for Classification</h2>
+<h2 number="1.1"><span class="header-section-number">1.1</span> Logistic Regression for Classification</h2>
 <p>Since the output of a logistic model is a probability <span class="math inline">\(\theta\)</span> that represents the conditional probability that the variable <span class="math inline">\(Y\)</span> is equal to 1 given the value of the covariates <span class="math inline">\(\mathbf{X}\)</span>, we can use this probability to, given a threshold <span class="math inline">\(\theta_0\)</span>, classify <span class="math inline">\(\mathbf{X} = \mathbf{x}_0\)</span> as <code>1</code>, if <span class="math inline">\(\hat{\theta}(\mathbf{x}_0) &gt; \theta_0\)</span>, and <code>0</code>, otherwise.</p>
 <p>In this sense, one important tool we will use is named <strong>Confusion Matrix</strong>. For instance, we may have</p>
 <table>
@@ -437,7 +444,7 @@ div.tocify {
 </div>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Exploring the data set</h1>
+<h1 number="2"><span class="header-section-number">2</span> Exploring the data set</h1>
 <p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
 <pre class="r"><code>col.names &lt;- c(&#39;gender&#39;, &#39;no_of_courses&#39;, &#39;age&#39;, &#39;previous_year_rating&#39;, &#39;length_of_service&#39;, &#39;KPIs_met_greater_80&#39;, &#39;awards_won&#39;, &#39;avg_training_score&#39;, &#39;is_promoted&#39;)
 hr &lt;- read.csv(file = &#39;datasets/hr.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
@@ -507,7 +514,7 @@ summary(hr)</code></pre>
 <p>Now, we can fit our model.</p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> Fitting a model</h1>
+<h1 number="3"><span class="header-section-number">3</span> Fitting a model</h1>
 <p>However, before fitting our model, we will split our data into <code>training</code> and <code>testing</code> data sets. To do this, we can use the <code>sample.split()</code> function from the <code>caTools</code> package.</p>
 <pre class="r"><code>library(&#39;caTools&#39;)
 set.seed(1)
@@ -611,7 +618,7 @@ plot(RPCRperf, colorize = TRUE, print.cutoffs.at = c(0, 0.05, 0.1, 0.5, 1.0))</c
 <p>From the above plot, notice that the <code>sensitivity</code> is shown in the <code>y</code>-axis, and <code>1 - specificity</code> is shown in the <code>x</code>-axis. The curve always start at <span class="math inline">\((0, 0)\)</span> and always ends at <span class="math inline">\((1, 1)\)</span>. At <span class="math inline">\((0, 0)\)</span>, we will not get any false positive points, but we will not identify people who truly deserved to be promoted. On the other hand, at the endpoint we identify all people who deserved to be promoted, but the false positive rate is <span class="math inline">\(1\)</span>. Therefore, we want something in the middle (which depends on the problem).</p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
+<h1 number="4"><span class="header-section-number">4</span> Predicting unknown values</h1>
 <p>For a threshold of <span class="math inline">\(0.1\)</span> (meaning that I expect to promote approximately 60% of people who deserve it, and I am willing to promote 20% of people who do not deserve it), I have the following results for the <code>testing</code> data set.</p>
 <pre class="r"><code>predictTesting &lt;- predict(model, type = &#39;response&#39;, newdata = hrTesting)
 (tb &lt;- table(hrTesting$is_promoted, predictTesting &gt;= 0.1))</code></pre>

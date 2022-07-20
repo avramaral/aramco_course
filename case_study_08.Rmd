@@ -1,0 +1,15 @@
+---
+title: 'Case Study 08'
+author: 'André Victor Ribeiro Amaral'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Objectives {-}
+
+In this case study, we will fit a Poisson regression for counting data. We will see the basics on how to fit such a model and interpret the obtained results.
+
+# Introduction
