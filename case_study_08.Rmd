@@ -10,6 +10,6 @@ output:
 
 # Objectives {-}
 
-In this case study, we will fit a Poisson regression for counting data. We will see the basics on how to fit such a model and interpret the obtained results.
+In this case study, we will fit a Poisson regression for count data. We will see the basics on how to explore and plot the data set, fit the corresponding model, and interpret the obtained results.
 
 # Introduction
