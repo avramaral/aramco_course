@@ -377,21 +377,21 @@ div.tocify {
 <p>In this case study, we will fit a logistic regression model. As this is the first example of this kind, we will see the basics on how to interpret the fitted model and how to visualize the results. In the next case study, we will see more on how to use logistic regression for classification problems.</p>
 </div>
 <div id="introduction" class="section level1" number="1">
-<h1 number="1"><span class="header-section-number">1</span> Introduction</h1>
+<h1><span class="header-section-number">1</span> Introduction</h1>
 <p>For this problem, we will analyse data collected on launch temperature and O-ring failure for the 24 Space Shuttle launches prior to the Challenger disaster of January 1986. Data were retrieved from the <a href="https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363"><strong>Applied Statistics and Probability for Engineers</strong> book</a>. You can download the <code>.csv</code> file <a href="./datasets/oring.csv">here</a>. The data set contains the following variables:</p>
 <ol style="list-style-type: decimal">
 <li><code>temperature</code> (quantitative)</li>
-<li><code>oRing_fail</code> (binary): <code>1</code> means that at least one O-ring failure had occurred on that launch; and <code>0</code>, otherwise.</li>
+<li><code>oRing_fail</code> (binary): <code>1</code> means that at least one O-ring failure had occurred on that launch; and <code>0</code>, otherwise</li>
 </ol>
 <div id="logistic-regression" class="section level2" number="1.1">
-<h2 number="1.1"><span class="header-section-number">1.1</span> Logistic Regression</h2>
+<h2><span class="header-section-number">1.1</span> Logistic Regression</h2>
 <p>Since this case study is slightly different from the previous ones, let’s start with a review of what a logistic regression model is.</p>
 <p>The logistic regression model is based on the Bernoulli distribution, which has only two values, 0 and 1, and one parameter, <span class="math inline">\(\theta\)</span>, the probability of success. That is,</p>
 <p><span class="math display">\[
 \mathbb{P}(Y = y) = \theta^{y} (1 - \theta)^{1 - y}, ~ y = 0, 1.
 \]</span></p>
 <p>Also, <span class="math inline">\(\mathbb{E}(Y) = \theta\)</span> and <span class="math inline">\(\text{Var}(Y) = \theta \cdot (1 - \theta)\)</span>.</p>
-<p>In this case, we assume that <span class="math inline">\(\theta(\mathbf{x})\)</span> depends on the values of <span class="math inline">\(\mathbf{x}\)</span> of the regressors through a linear combination <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> for some unknown <span class="math inline">\(\boldsymbol{\beta}\)</span>.</p>
+<p>In this case, we assume that <span class="math inline">\(\theta(\mathbf{x})\)</span> depends on the values of <span class="math inline">\(\mathbf{x}\)</span> through the linear combination <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> for some unknown <span class="math inline">\(\boldsymbol{\beta}\)</span>.</p>
 <p>However, <span class="math inline">\(\theta(\mathbf{x})\)</span> cannot equal <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> because <span class="math inline">\(\theta\)</span> is a probability and hence takes values in <span class="math inline">\([0, 1]\)</span>, while the linear combination <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> takes values in <span class="math inline">\(\mathbb{R}\)</span>. Thus, we need a transformation to map these two expressions. In our case, we will choose the <code>logit</code> function, that is,</p>
 <p><span class="math display">\[
 \texttt{logit}(\theta(\mathbf{x})) = \log\left(\frac{\theta(\mathbf{x})}{1 - \theta(\mathbf{x})}\right)
@@ -409,7 +409,7 @@ plot(x = x, y = y, xlab = &#39;x&#39;, ylab = &#39;logit(x)&#39;, type = &#39;l&
 </div>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
-<h1 number="2"><span class="header-section-number">2</span> Exploring the data set</h1>
+<h1><span class="header-section-number">2</span> Exploring the data set</h1>
 <p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
 <pre class="r"><code>col.names &lt;- c(&#39;temperature&#39;, &#39;oRing_fail&#39;)
 oring &lt;- read.csv(file = &#39;datasets/oring.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
@@ -445,7 +445,7 @@ summary(oring)</code></pre>
 <p>The above plot is not very interesting since we do not have much data, but we can observe, for instance, that failures have occurred at lower temperature (<span class="math inline">\(&lt; 60\)</span>) with few exceptions. But now, we can fit our model.</p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
-<h1 number="3"><span class="header-section-number">3</span> Fitting a model</h1>
+<h1><span class="header-section-number">3</span> Fitting a model</h1>
 <p>Although we did not say this before, the logistic regression (as the linear regression) are just special cases of a class of models named Generalized Linear Models (GLM), and to fit such a model, we will use the <code>glm()</code> function from base <code>R</code>. We can see the function help by entering the <code>?glm</code> command.</p>
 <pre class="r"><code>model &lt;- glm(formula = oRing_fail ~ temperature, data = oring, family = binomial(link = &#39;logit&#39;)) # with logit link function
 summary(model)</code></pre>
@@ -525,7 +525,7 @@ for (i in 1:3) lines(c(lmr[i], lmr[i]), c(mean_prop[i] + se[i], mean_prop[i] - s
 <p>From the above plot, we can see that, our fitted model (excepted, maybe, for low temperatures) describes well the data.</p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
-<h1 number="4"><span class="header-section-number">4</span> Predicting unknown values</h1>
+<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
 <p>The actual temperature at the Challenger launch was 31∘F. Although our model may not give us good predictions for such temperature (it is way out of our observed range of values), we can compute the probability of observing at least one O-ring failure during the launch in the following way</p>
 <pre class="r"><code>newdata &lt;- data.frame(temperature = 35)
 predict(model, newdata = newdata, type = &#39;response&#39;)</code></pre>

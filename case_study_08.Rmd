@@ -13,3 +13,136 @@ output:
 In this case study, we will fit a Poisson regression for count data. We will see the basics on how to explore and plot the data set, fit the corresponding model, and interpret the obtained results.
 
 # Introduction
+
+For this problem, we will analyse data for the number of awards received by high school students depending on their program and Math score. Data were retrieved from [UCLA (Advanced Research Computing. Statistical Methods and Data Analytics)](https://stats.oarc.ucla.edu/) website. You can download the `.csv` file [here](./datasets/poisson_sim.csv). The data set contains the following variables:
+
+1. `num_awards` (quantitative): Count data
+2. `program` (multi-valued discrete): `1` means "General", `2` means "Academic", and `3` means "Vocational"
+3. `math` (quantitative): Math score
+
+## Poisson Regression
+
+The Poisson Regression is based on the Poisson distribution for the response variable $Y$, and has probability mass function (PMF) given by
+$$
+\mathbb{P}(Y = y) = \frac{\theta^{y}}{y!}e^{-\theta}, \text{ such that } y = 0, 1, 2, \cdots
+$$
+where $\theta$ is a parameter that represents the expected rate of occurrences.  Also, $\mathbb{E}(Y) = \text{Var}(Y) = \theta$.
+
+In this case, we assume that $\theta(\mathbf{x})$ depends on the values of $\mathbf{x}$ through the linear combination $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ for some unknown $\boldsymbol{\beta}$.
+
+However, $\theta(\mathbf{x})$ cannot equal  $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ because $\theta \in [0, +\infty)$, while the linear combination  $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ takes values in $\mathbb{R}$. Thus, we need a transformation to map these two expressions. In our case, we will choose the `exp` function, that is, 
+
+$$
+\theta(\mathbf{x}) = \exp\{{\mathbf{x}^{\text{T}}\boldsymbol{\beta}}\}.
+$$
+Alternatively, we can write
+
+$$
+\log(\theta(\mathbf{x})) = \mathbf{x}^{\text{T}}\boldsymbol{\beta}.
+$$
+
+# Exploring the data set
+
+In order to explore the data set and perform initial analyses, we have to read it (with `R`) first. Provided that the `.csv` file is saved within the `datasets/` folder, one can read the file in the following way.
+
+```{r}
+col.names <- c('num_awards', 'program', 'math')
+dataset <- read.csv(file = 'datasets/poisson_sim.csv', header = TRUE, sep = ',', col.names = col.names)
+dataset$program <- as.factor(dataset$program)
+head(dataset, 5)
+```
+
+The first thing we can do is checking the distribution for the number of awards
+```{r}
+barplot(table(dataset$num_awards), xlab = 'Number of awards', ylab = 'Frequency')
+```
+
+From the above plot, we can see that most students did not receive any award and just a few of them received 3 or more. Also, we would like to check whether $\mathbb{E}(Y_i|\mathbf{X}_i) = \text{Var}(Y_i|\mathbf{X}_i)$, $\forall i$. In that case, we can group the individuals according to their program. Firstly,
+```{r}
+m <- mean(dataset$num_awards)
+v <- var(dataset$num_awards)
+print(paste('The overall estimated mean is ', round(m, 3), ' and the overall estimated variance is ', round(v, 3), '.', sep = ''))
+```
+
+However, since we suspect that the variable `program` is important to our analysis, we may compute the mean and variance of the number of awards after grouping the students. In that case,
+```{r}
+est.1 <- round(c(mean(dataset$num_awards[dataset$program == '1']), var(dataset$num_awards[dataset$program == '1'])), 3)
+est.2 <- round(c(mean(dataset$num_awards[dataset$program == '2']), var(dataset$num_awards[dataset$program == '2'])), 3)
+est.3 <- round(c(mean(dataset$num_awards[dataset$program == '3']), var(dataset$num_awards[dataset$program == '3'])), 3)
+
+est <- rbind(est.1, est.2, est.3)
+colnames(est) <- c('Mean', 'Variance')
+rownames(est) <- c('General', 'Academic', 'Vocational')
+
+est
+```
+
+In that case, if the variable `program` is used to fit the model, the assumption for the mean and variance seems to hold. Therefore, we can use the Poisson regression model.
+
+# Fitting a model
+
+As for the logistic regression, the Poisson regression is a special cases of a class of models named Generalized Linear Models (GLM), and to fit such a model, we will use the `glm()` function from base `R`. We can see the function help by entering the `?glm` command. 
+
+Let's start by fitting a model with all covariates and interaction.
+
+```{r}
+model1 <- glm(formula = num_awards ~ math + program + math * program, data = dataset, family = poisson(link = 'log')) # with log link function
+summary(model1)
+```
+
+Based on the above summary, for a significance level of 5%, all coefficients seem to be non-significant. Therefore, we might want to fit a simpler model. In particular, we will not include interaction for `model2`.
+
+```{r}
+model2 <- glm(formula = num_awards ~ math + program, data = dataset, family = poisson(link = 'log')) 
+summary(model2)
+```
+
+For `model2`, we will keep all covariates.
+
+This means that, considering "General" (`1`) as the base-category, and defining $\mathbb{I}_{\{\text{program}_i = 2\}}$ and $\mathbb{I}_{\{\text{program}_i = 3\}}$ indicator functions for the events that "individual `i` belongs to the Academic program" and "individual `i` belongs to the Vocational program", respectively, we have that
+
+$$
+\hat\theta_i = \exp\{-5.237 + 0.070 \text{ math_score}_i + 1.085 ~\mathbb{I}_{\{\text{program}_i = 2\}} + 0.390 ~\mathbb{I}_{\{\text{program}_i = 3\}}\}
+$$
+
+In `R`, we can compute $\hat\theta_i$ as follows
+```{r}
+eta <- predict(model2)
+theta <- exp(eta)
+dataset$est_theta <- theta
+head(dataset)
+```
+
+## Interpreting the fitted model
+
+Now, we can explore how $\hat\theta_i$ relates to both `program` and `math`.
+
+```{r}
+plot(dataset$math, dataset$est_theta, xlab = 'Math score', ylab = 'Estimated theta', type = 'p')
+boxplot(dataset$est_theta ~ dataset$program, xlab = 'Program', ylab = 'Estimated theta',
+        names = c('General', 'Academic', 'Vocational'))
+```
+
+Based on the first plot above, it seems that as the math score increases, the expected number of awards also increases. Also, based on the second plot, the "Academic" program seems to correspond to the group with the largest expected number of awards.
+
+Furthermore, recalling that 
+
+$$
+\hat\theta_i = \exp\{-5.237 + 0.070 \text{ math_score}_i + 1.085 ~\mathbb{I}_{\{\text{program}_i = 2\}} + 0.390 ~\mathbb{I}_{\{\text{program}_i = 3\}}\},
+$$
+we can say that
+
+* The expected log count for a one-unit increase in `math` is $0.070$. This represents a $100 \cdot (e^{0.070} - 1) = 7.2\%$ increase in the rewards rate. 
+* The expected log count for "Academic program" (in comparison to the "General program") increases in $1.085$. This represents a $100 \cdot (e^{1.085} - 1) = 195.9\%$ increase in the rewards rate.
+
+Finally, we can also plot the expected number of awards grouped by `program`.
+
+```{r}
+library(ggplot2)
+ggplot(as.data.frame(dataset), aes(x = math, y = est_theta, colour = program)) +
+  geom_point(aes(y = num_awards), alpha = 0.5) +
+  geom_line(size = 1) +
+  labs(x = "Math Score", y = "Expected number of awards")
+```
+
+

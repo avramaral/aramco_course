@@ -377,7 +377,7 @@ div.tocify {
 <p>In this case study, we will fit a multiple linear regression model. However, different than <a href="./case_study_04.html">before</a>, we will work with more variables. To do so, we will check for correlation among covariates, see how to perform variable selection, fit a model, check the assumptions, interpret it, and predict (and plot) new values based on this fitted model. When in higher dimension, visualization is difficult (and unnecessary for most cases).</p>
 </div>
 <div id="introduction" class="section level1" number="1">
-<h1 number="1"><span class="header-section-number">1</span> Introduction</h1>
+<h1><span class="header-section-number">1</span> Introduction</h1>
 <p>For this problem, we will analyse a data set with 6 variable (1 response variable + 6 covariates). Although their meaning may not be stated, we will see how important feature selection is when performing multiple regression analysis. You can download the <code>.csv</code> file <a href="./datasets/data.csv">here</a>. The data set contains the following variables:</p>
 <ol style="list-style-type: decimal">
 <li><code>var1</code> (quantitative)</li>
@@ -390,7 +390,7 @@ div.tocify {
 </ol>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
-<h1 number="2"><span class="header-section-number">2</span> Exploring the data set</h1>
+<h1><span class="header-section-number">2</span> Exploring the data set</h1>
 <p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
 <pre class="r"><code>col.names &lt;- c(&#39;var1&#39;, &#39;var2&#39;, &#39;var3&#39;, &#39;var4&#39;, &#39;var5&#39;, &#39;var6&#39;, &#39;response&#39;)
 data &lt;- read.csv(file = &#39;datasets/data.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
@@ -430,7 +430,7 @@ corrplot.mixed(cor(data))</code></pre>
 <p>However, from the above plot we may have clearer information about the correlation between pair of variables. For instance, <code>var1</code> and <code>var3</code> are highly correlated, as well as <code>var5</code> and <code>var6</code>, <code>var5</code> and <code>response</code>, and <code>var6</code> and <code>response</code>. This information can help us having an idea on which attributes better explain the dependent variable.</p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
-<h1 number="3"><span class="header-section-number">3</span> Fitting a model</h1>
+<h1><span class="header-section-number">3</span> Fitting a model</h1>
 <p>Our very first task will be fitting a model with all variables so that we can try to explain how the response variable relates to the covariates. We can do this in the following way.</p>
 <pre class="r"><code>model &lt;- lm(formula = response ~ ., data = data)
 summary(model)</code></pre>
@@ -627,7 +627,7 @@ vif(modelAIC3)</code></pre>
 \end{align*}\]</span></p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
-<h1 number="4"><span class="header-section-number">4</span> Predicting unknown values</h1>
+<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
 <p>Now that we have a “good” fitted model, we can predict the value of <code>response</code> for new values of <code>var1</code>, <code>var2</code>, and <code>var5</code>. For instance, we can predict the value of <code>response</code>, such that <code>var1</code>, <code>var2</code> and <code>var5</code> are equal to 55, 100, and 70, respectively. We can also include a confidence and a prediction interval.</p>
 <pre class="r"><code>newdata &lt;- data.frame(var1 = 55, var2 = 100, var5 = 70)
 

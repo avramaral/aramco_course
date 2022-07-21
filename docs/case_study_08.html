@@ -377,7 +377,166 @@ div.tocify {
 <p>In this case study, we will fit a Poisson regression for count data. We will see the basics on how to explore and plot the data set, fit the corresponding model, and interpret the obtained results.</p>
 </div>
 <div id="introduction" class="section level1" number="1">
-<h1 number="1"><span class="header-section-number">1</span> Introduction</h1>
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>For this problem, we will analyse data for the number of awards received by high school students depending on their program and Math score. Data were retrieved from <a href="https://stats.oarc.ucla.edu/">UCLA (Advanced Research Computing. Statistical Methods and Data Analytics)</a> website. You can download the <code>.csv</code> file <a href="./datasets/poisson_sim.csv">here</a>. The data set contains the following variables:</p>
+<ol style="list-style-type: decimal">
+<li><code>num_awards</code> (quantitative): Count data</li>
+<li><code>program</code> (multi-valued discrete): <code>1</code> means “General”, <code>2</code> means “Academic”, and <code>3</code> means “Vocational”</li>
+<li><code>math</code> (quantitative): Math score</li>
+</ol>
+<div id="poisson-regression" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Poisson Regression</h2>
+<p>The Poisson Regression is based on the Poisson distribution for the response variable <span class="math inline">\(Y\)</span>, and has probability mass function (PMF) given by <span class="math display">\[
+\mathbb{P}(Y = y) = \frac{\theta^{y}}{y!}e^{-\theta}, \text{ such that } y = 0, 1, 2, \cdots
+\]</span> where <span class="math inline">\(\theta\)</span> is a parameter that represents the expected rate of occurrences. Also, <span class="math inline">\(\mathbb{E}(Y) = \text{Var}(Y) = \theta\)</span>.</p>
+<p>In this case, we assume that <span class="math inline">\(\theta(\mathbf{x})\)</span> depends on the values of <span class="math inline">\(\mathbf{x}\)</span> through the linear combination <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> for some unknown <span class="math inline">\(\boldsymbol{\beta}\)</span>.</p>
+<p>However, <span class="math inline">\(\theta(\mathbf{x})\)</span> cannot equal <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> because <span class="math inline">\(\theta \in [0, +\infty)\)</span>, while the linear combination <span class="math inline">\(\mathbf{x}^{\text{T}}\boldsymbol{\beta}\)</span> takes values in <span class="math inline">\(\mathbb{R}\)</span>. Thus, we need a transformation to map these two expressions. In our case, we will choose the <code>exp</code> function, that is,</p>
+<p><span class="math display">\[
+\theta(\mathbf{x}) = \exp\{{\mathbf{x}^{\text{T}}\boldsymbol{\beta}}\}.
+\]</span> Alternatively, we can write</p>
+<p><span class="math display">\[
+\log(\theta(\mathbf{x})) = \mathbf{x}^{\text{T}}\boldsymbol{\beta}.
+\]</span></p>
+</div>
+</div>
+<div id="exploring-the-data-set" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Exploring the data set</h1>
+<p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
+<pre class="r"><code>col.names &lt;- c(&#39;num_awards&#39;, &#39;program&#39;, &#39;math&#39;)
+dataset &lt;- read.csv(file = &#39;datasets/poisson_sim.csv&#39;, header = TRUE, sep = &#39;,&#39;, col.names = col.names)
+dataset$program &lt;- as.factor(dataset$program)
+head(dataset, 5)</code></pre>
+<pre><code>##   num_awards program math
+## 1          0       1   41
+## 2          0       3   44
+## 3          0       3   42
+## 4          0       3   40
+## 5          0       1   42</code></pre>
+<p>The first thing we can do is checking the distribution for the number of awards</p>
+<pre class="r"><code>barplot(table(dataset$num_awards), xlab = &#39;Number of awards&#39;, ylab = &#39;Frequency&#39;)</code></pre>
+<p><img src="case_study_08_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>From the above plot, we can see that most students did not receive any award and just a few of them received 3 or more. Also, we would like to check whether <span class="math inline">\(\mathbb{E}(Y_i|\mathbf{X}_i) = \text{Var}(Y_i|\mathbf{X}_i)\)</span>, <span class="math inline">\(\forall i\)</span>. In that case, we can group the individuals according to their program. Firstly,</p>
+<pre class="r"><code>m &lt;- mean(dataset$num_awards)
+v &lt;- var(dataset$num_awards)
+print(paste(&#39;The overall estimated mean is &#39;, round(m, 3), &#39; and the overall estimated variance is &#39;, round(v, 3), &#39;.&#39;, sep = &#39;&#39;))</code></pre>
+<pre><code>## [1] &quot;The overall estimated mean is 0.633 and the overall estimated variance is 1.112.&quot;</code></pre>
+<p>However, since we suspect that the variable <code>program</code> is important to our analysis, we may compute the mean and variance of the number of awards after grouping the students. In that case,</p>
+<pre class="r"><code>est.1 &lt;- round(c(mean(dataset$num_awards[dataset$program == &#39;1&#39;]), var(dataset$num_awards[dataset$program == &#39;1&#39;])), 3)
+est.2 &lt;- round(c(mean(dataset$num_awards[dataset$program == &#39;2&#39;]), var(dataset$num_awards[dataset$program == &#39;2&#39;])), 3)
+est.3 &lt;- round(c(mean(dataset$num_awards[dataset$program == &#39;3&#39;]), var(dataset$num_awards[dataset$program == &#39;3&#39;])), 3)
+
+est &lt;- rbind(est.1, est.2, est.3)
+colnames(est) &lt;- c(&#39;Mean&#39;, &#39;Variance&#39;)
+rownames(est) &lt;- c(&#39;General&#39;, &#39;Academic&#39;, &#39;Vocational&#39;)
+
+est</code></pre>
+<pre><code>##             Mean Variance
+## General    0.200    0.164
+## Academic   1.000    1.635
+## Vocational 0.245    0.272</code></pre>
+<p>In that case, if the variable <code>program</code> is used to fit the model, the assumption for the mean and variance seems to hold. Therefore, we can use the Poisson regression model.</p>
+</div>
+<div id="fitting-a-model" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Fitting a model</h1>
+<p>As for the logistic regression, the Poisson regression is a special cases of a class of models named Generalized Linear Models (GLM), and to fit such a model, we will use the <code>glm()</code> function from base <code>R</code>. We can see the function help by entering the <code>?glm</code> command.</p>
+<p>Let’s start by fitting a model with all covariates and interaction.</p>
+<pre class="r"><code>model1 &lt;- glm(formula = num_awards ~ math + program + math * program, data = dataset, family = poisson(link = &#39;log&#39;)) # with log link function
+summary(model1)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = num_awards ~ math + program + math * program, family = poisson(link = &quot;log&quot;), 
+##     data = dataset)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.2295  -0.8024  -0.5363   0.2673   2.6826  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept)   -3.86179    2.49317  -1.549    0.121
+## math           0.04400    0.04721   0.932    0.351
+## program2      -0.44107    2.60299  -0.169    0.865
+## program3      -0.77333    2.87348  -0.269    0.788
+## math:program2  0.02841    0.04870   0.583    0.560
+## math:program3  0.02176    0.05428   0.401    0.689
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 286.41  on 198  degrees of freedom
+## Residual deviance: 188.82  on 193  degrees of freedom
+## AIC: 376.87
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<p>Based on the above summary, for a significance level of 5%, all coefficients seem to be non-significant. Therefore, we might want to fit a simpler model. In particular, we will not include interaction for <code>model2</code>.</p>
+<pre class="r"><code>model2 &lt;- glm(formula = num_awards ~ math + program, data = dataset, family = poisson(link = &#39;log&#39;)) 
+summary(model2)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = num_awards ~ math + program, family = poisson(link = &quot;log&quot;), 
+##     data = dataset)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.2023  -0.8477  -0.5055   0.2755   2.6794  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -5.23755    0.65836  -7.955 1.78e-15 ***
+## math         0.06997    0.01060   6.602 4.05e-11 ***
+## program2     1.08534    0.35824   3.030  0.00245 ** 
+## program3     0.38099    0.44104   0.864  0.38767    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 286.41  on 198  degrees of freedom
+## Residual deviance: 189.18  on 195  degrees of freedom
+## AIC: 373.23
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<p>For <code>model2</code>, we will keep all covariates.</p>
+<p>This means that, considering “General” (<code>1</code>) as the base-category, and defining <span class="math inline">\(\mathbb{I}_{\{\text{program}_i = 2\}}\)</span> and <span class="math inline">\(\mathbb{I}_{\{\text{program}_i = 3\}}\)</span> indicator functions for the events that “individual <code>i</code> belongs to the Academic program” and “individual <code>i</code> belongs to the Vocational program”, respectively, we have that</p>
+<p><span class="math display">\[
+\hat\theta_i = \exp\{-5.237 + 0.070 \text{ math_score}_i + 1.085 ~\mathbb{I}_{\{\text{program}_i = 2\}} + 0.390 ~\mathbb{I}_{\{\text{program}_i = 3\}}\}
+\]</span></p>
+<p>In <code>R</code>, we can compute <span class="math inline">\(\hat\theta_i\)</span> as follows</p>
+<pre class="r"><code>eta &lt;- predict(model2)
+theta &lt;- exp(eta)
+dataset$est_theta &lt;- theta
+head(dataset)</code></pre>
+<pre><code>##   num_awards program math est_theta
+## 1          0       1   41 0.0936090
+## 2          0       3   44 0.1690241
+## 3          0       3   42 0.1469503
+## 4          0       3   40 0.1277592
+## 5          0       1   42 0.1003938
+## 6          0       3   46 0.1944138</code></pre>
+<div id="interpreting-the-fitted-model" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Interpreting the fitted model</h2>
+<p>Now, we can explore how <span class="math inline">\(\hat\theta_i\)</span> relates to both <code>program</code> and <code>math</code>.</p>
+<pre class="r"><code>plot(dataset$math, dataset$est_theta, xlab = &#39;Math score&#39;, ylab = &#39;Estimated theta&#39;, type = &#39;p&#39;)</code></pre>
+<p><img src="case_study_08_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>boxplot(dataset$est_theta ~ dataset$program, xlab = &#39;Program&#39;, ylab = &#39;Estimated theta&#39;,
+        names = c(&#39;General&#39;, &#39;Academic&#39;, &#39;Vocational&#39;))</code></pre>
+<p><img src="case_study_08_files/figure-html/unnamed-chunk-8-2.png" width="672" /></p>
+<p>Based on the first plot above, it seems that as the math score increases, the expected number of awards also increases. Also, based on the second plot, the “Academic” program seems to correspond to the group with the largest expected number of awards.</p>
+<p>Furthermore, recalling that</p>
+<p><span class="math display">\[
+\hat\theta_i = \exp\{-5.237 + 0.070 \text{ math_score}_i + 1.085 ~\mathbb{I}_{\{\text{program}_i = 2\}} + 0.390 ~\mathbb{I}_{\{\text{program}_i = 3\}}\},
+\]</span> we can say that</p>
+<ul>
+<li>The expected log count for a one-unit increase in <code>math</code> is <span class="math inline">\(0.070\)</span>. This represents a <span class="math inline">\(100 \cdot (e^{0.070} - 1) = 7.2\%\)</span> increase in the rewards rate.</li>
+<li>The expected log count for “Academic program” (in comparison to the “General program”) increases in <span class="math inline">\(1.085\)</span>. This represents a <span class="math inline">\(100 \cdot (e^{1.085} - 1) = 195.9\%\)</span> increase in the rewards rate.</li>
+</ul>
+<p>Finally, we can also plot the expected number of awards grouped by <code>program</code>.</p>
+<pre class="r"><code>library(ggplot2)
+ggplot(as.data.frame(dataset), aes(x = math, y = est_theta, colour = program)) +
+  geom_point(aes(y = num_awards), alpha = 0.5) +
+  geom_line(size = 1) +
+  labs(x = &quot;Math Score&quot;, y = &quot;Expected number of awards&quot;)</code></pre>
+<p><img src="case_study_08_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
 </div>
 
 

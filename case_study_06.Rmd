@@ -17,7 +17,7 @@ In this case study, we will fit a logistic regression model. As this is the firs
 For this problem, we will analyse data collected on launch temperature and O-ring failure for the 24 Space Shuttle launches prior to the Challenger disaster of January 1986. Data were retrieved from the [**Applied Statistics and Probability for Engineers** book](https://www.wiley.com/en-us/Applied+Statistics+and+Probability+for+Engineers%2C+7th+Edition-p-9781119400363). You can download the `.csv` file [here](./datasets/oring.csv). The data set contains the following variables:
 
 1. `temperature` (quantitative)
-2. `oRing_fail` (binary): `1` means that at least one O-ring failure had occurred on that launch; and `0`, otherwise.
+2. `oRing_fail` (binary): `1` means that at least one O-ring failure had occurred on that launch; and `0`, otherwise
 
 ## Logistic Regression
 
@@ -31,7 +31,7 @@ $$
 
 Also, $\mathbb{E}(Y) = \theta$ and $\text{Var}(Y) = \theta \cdot (1 - \theta)$.
 
-In this case, we assume that $\theta(\mathbf{x})$ depends on the values of $\mathbf{x}$ of the regressors through a linear combination $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ for some unknown $\boldsymbol{\beta}$.
+In this case, we assume that $\theta(\mathbf{x})$ depends on the values of $\mathbf{x}$ through the linear combination $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ for some unknown $\boldsymbol{\beta}$.
 
 However, $\theta(\mathbf{x})$ cannot equal  $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ because $\theta$ is a probability and hence takes values in $[0, 1]$, while the linear combination  $\mathbf{x}^{\text{T}}\boldsymbol{\beta}$ takes values in $\mathbb{R}$. Thus, we need a transformation to map these two expressions. In our case, we will choose the `logit` function, that is,
 
