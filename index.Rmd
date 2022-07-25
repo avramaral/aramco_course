@@ -1,7 +1,7 @@
 ---
-title: 'Exercises in Linear Models'
+title: 'Applied Statistics and Data Analysis'
 author: 'André Victor Ribeiro Amaral'
 ---
 
-This page provides auxiliary material for the course, given by [Dr. Paula Moraga](https://www.paulamoraga.com/), on Linear Models related topics. Here, we will go through a few different case studies, which can be accessed in the above tabs.
+This page provides auxiliary material for the course [Applied Statistics and Data Analysis](https://www.paulamoraga.com/course-aramco/) (ASDA), given by [Dr. Paula Moraga](https://www.paulamoraga.com/). Here, we will go through a few different case studies, which can be accessed in the above tabs.
 

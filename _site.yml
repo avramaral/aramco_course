@@ -1,7 +1,7 @@
 name: 'André Victor Ribeiro Amaral'
 output_dir: 'docs'
 navbar:
-  title: 'Linear Models'
+  title: 'ASDA'
   left:
     - text: 'Case Study 01'
       href: case_study_01.html

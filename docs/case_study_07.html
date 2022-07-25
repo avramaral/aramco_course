@@ -321,7 +321,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Linear Models</a>
+      <a class="navbar-brand" href="index.html">ASDA</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -374,27 +374,59 @@ div.tocify {
 
 <div id="objectives" class="section level1 unnumbered">
 <h1 class="unnumbered">Objectives</h1>
-<p>As <a href="./case_study_06.html">before</a>, in this case study, we will fit a logistic regression model. However, this time we will be concerning in using logistic regression for a classification problem. To do this, we will fit and interpret the model, but we will also use it to predict the class of a newly observed cases. Moreover, to select an appropriate threshold for classifying new cases, we will deal with the Receiver Operating Characteristic (ROC) curve.</p>
+<p>As <a href="./case_study_06.html">before</a>, in this case study, we
+will fit a logistic regression model. However, this time we will be
+concerning in using logistic regression for a classification problem. To
+do this, we will fit and interpret the model, but we will also use it to
+predict the class of a newly observed cases. Moreover, to select an
+appropriate threshold for classifying new cases, we will deal with the
+Receiver Operating Characteristic (ROC) curve.</p>
 </div>
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>For this problem, we will analyse data about office workers’ performance. The objective is classifying them as <code>1</code>, if they deserve to be promoted, and <code>0</code>, otherwise. The data set was retrieved from <a href="https://datahack.analyticsvidhya.com/contest/wns-analytics-hackathon-2018-1/">this page</a> (with changes). You can download the <code>.csv</code> file <a href="./datasets/hr.csv">here</a>.</p>
+<p>For this problem, we will analyse data about office workers’
+performance. The objective is classifying them as <code>1</code>, if
+they deserve to be promoted, and <code>0</code>, otherwise. The data set
+was retrieved from <a
+href="https://datahack.analyticsvidhya.com/contest/wns-analytics-hackathon-2018-1/">this
+page</a> (with changes). You can download the <code>.csv</code> file <a
+href="./datasets/hr.csv">here</a>.</p>
 <p>This data set contains the following variables:</p>
 <ol style="list-style-type: decimal">
 <li><code>gender</code> (categorical): female (F) or male (M)</li>
-<li><code>no_of_courses</code> (numeric): number of courses completed in the previous year</li>
+<li><code>no_of_courses</code> (numeric): number of courses completed in
+the previous year</li>
 <li><code>age</code> (numeric)</li>
-<li><code>previous_year_rating</code> (numeric): employee rating for the previous year</li>
-<li><code>length_of_service</code> (numeric): length of service in years</li>
-<li><code>KPIs_met_greater_80</code> (categorical): if percent of Key Performance Indicators (KPIs) is greater than 80%, then <code>1</code>; otherwise, <code>0</code></li>
-<li><code>awards_won</code> (categorical): if won an award during the previous year, then <code>1</code>; otherwise, <code>0</code></li>
-<li><code>avg_training_score</code> (numeric): average score in current training evaluation</li>
-<li><code>is_promoted</code> (categorical): recommended for promotion</li>
+<li><code>previous_year_rating</code> (numeric): employee rating for the
+previous year</li>
+<li><code>length_of_service</code> (numeric): length of service in
+years</li>
+<li><code>KPIs_met_greater_80</code> (categorical): if percent of Key
+Performance Indicators (KPIs) is greater than 80%, then <code>1</code>;
+otherwise, <code>0</code></li>
+<li><code>awards_won</code> (categorical): if won an award during the
+previous year, then <code>1</code>; otherwise, <code>0</code></li>
+<li><code>avg_training_score</code> (numeric): average score in current
+training evaluation</li>
+<li><code>is_promoted</code> (categorical): recommended for
+promotion</li>
 </ol>
-<div id="logistic-regression-for-classification" class="section level2" number="1.1">
-<h2><span class="header-section-number">1.1</span> Logistic Regression for Classification</h2>
-<p>Since the output of a logistic model is a probability <span class="math inline">\(\theta\)</span> that represents the conditional probability that the variable <span class="math inline">\(Y\)</span> is equal to 1 given the value of the covariates <span class="math inline">\(\mathbf{X}\)</span>, we can use this probability to, given a threshold <span class="math inline">\(\theta_0\)</span>, classify <span class="math inline">\(\mathbf{X} = \mathbf{x}_0\)</span> as <code>1</code>, if <span class="math inline">\(\hat{\theta}(\mathbf{x}_0) &gt; \theta_0\)</span>, and <code>0</code>, otherwise.</p>
-<p>In this sense, one important tool we will use is named <strong>Confusion Matrix</strong>. For instance, we may have</p>
+<div id="logistic-regression-for-classification" class="section level2"
+number="1.1">
+<h2><span class="header-section-number">1.1</span> Logistic Regression
+for Classification</h2>
+<p>Since the output of a logistic model is a probability <span
+class="math inline">\(\theta\)</span> that represents the conditional
+probability that the variable <span class="math inline">\(Y\)</span> is
+equal to 1 given the value of the covariates <span
+class="math inline">\(\mathbf{X}\)</span>, we can use this probability
+to, given a threshold <span class="math inline">\(\theta_0\)</span>,
+classify <span class="math inline">\(\mathbf{X} = \mathbf{x}_0\)</span>
+as <code>1</code>, if <span
+class="math inline">\(\hat{\theta}(\mathbf{x}_0) &gt; \theta_0\)</span>,
+and <code>0</code>, otherwise.</p>
+<p>In this sense, one important tool we will use is named
+<strong>Confusion Matrix</strong>. For instance, we may have</p>
 <table>
 <thead>
 <tr class="header">
@@ -425,27 +457,45 @@ div.tocify {
 </tr>
 </tbody>
 </table>
-<p>From the above table, we are interested in the following quantities</p>
+<p>From the above table, we are interested in the following
+quantities</p>
 <ul>
-<li><strong>True positives (TP)</strong>: model predict <code>1</code> and the values were actually <code>1</code> (e.g, 50).</li>
-<li><strong>True negatives (TN)</strong>: model predict <code>0</code> and the values were actually <code>0</code> (e.g, 40).</li>
-<li><strong>False positives (FP)</strong>: model predict <code>1</code> and the values were actually <code>0</code> (e.g, 20).</li>
-<li><strong>False negatives (FN)</strong>: model predict <code>0</code> and the values were actually <code>1</code> (e.g, 15).</li>
+<li><strong>True positives (TP)</strong>: model predict <code>1</code>
+and the values were actually <code>1</code> (e.g, 50).</li>
+<li><strong>True negatives (TN)</strong>: model predict <code>0</code>
+and the values were actually <code>0</code> (e.g, 40).</li>
+<li><strong>False positives (FP)</strong>: model predict <code>1</code>
+and the values were actually <code>0</code> (e.g, 20).</li>
+<li><strong>False negatives (FN)</strong>: model predict <code>0</code>
+and the values were actually <code>1</code> (e.g, 15).</li>
 </ul>
-<p>Also, and based on these quantities, we can determine the <span class="math inline">\(\texttt{accuracy}\)</span>in the following way</p>
+<p>Also, and based on these quantities, we can determine the <span
+class="math inline">\(\texttt{accuracy}\)</span>in the following way</p>
 <p><span class="math display">\[
 \texttt{accuracy} = \frac{\texttt{TP} + \texttt{TN}}{\texttt{total}},
-\]</span> which describes how often the classifier is correct. In our example, <span class="math inline">\(\texttt{accuracy} = 90/125 = 0.72\)</span>.</p>
+\]</span> which describes how often the classifier is correct. In our
+example, <span class="math inline">\(\texttt{accuracy} = 90/125 =
+0.72\)</span>.</p>
 <p>Other measures of accuracy include</p>
 <ul>
-<li><strong>Sensitivity</strong>: when the true result is <code>1</code>, how often the model predicts <code>1</code>? (<span class="math inline">\(\texttt{TP}/(\texttt{TP} + \texttt{FN})\)</span>)</li>
-<li><strong>Specificity</strong>: when the true result is <code>0</code>, how often the model predicts <code>0</code>? (<span class="math inline">\(\texttt{TN}/(\texttt{TN} + \texttt{FP})\)</span>)</li>
+<li><strong>Sensitivity</strong>: when the true result is
+<code>1</code>, how often the model predicts <code>1</code>? (<span
+class="math inline">\(\texttt{TP}/(\texttt{TP} +
+\texttt{FN})\)</span>)</li>
+<li><strong>Specificity</strong>: when the true result is
+<code>0</code>, how often the model predicts <code>0</code>? (<span
+class="math inline">\(\texttt{TN}/(\texttt{TN} +
+\texttt{FP})\)</span>)</li>
 </ul>
 </div>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Exploring the data set</h1>
-<p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
+<h1><span class="header-section-number">2</span> Exploring the data
+set</h1>
+<p>In order to explore the data set and perform initial analyses, we
+have to read it (with <code>R</code>) first. Provided that the
+<code>.csv</code> file is saved within the <code>datasets/</code>
+folder, one can read the file in the following way.</p>
 <pre class="r"><code>col.names &lt;- c(&#39;gender&#39;, &#39;no_of_courses&#39;, &#39;age&#39;, &#39;previous_year_rating&#39;, &#39;length_of_service&#39;, &#39;KPIs_met_greater_80&#39;, &#39;awards_won&#39;, &#39;avg_training_score&#39;, &#39;is_promoted&#39;)
 hr &lt;- read.csv(file = &#39;datasets/hr.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
 head(hr, 5)</code></pre>
@@ -484,7 +534,9 @@ head(hr, 5)</code></pre>
 ##  Mean   :0.08541  
 ##  3rd Qu.:0.00000  
 ##  Max.   :1.00000</code></pre>
-<p>However, as some variables are being interpreted as numeric, we have to convert them to factor (categorical variable) before conducting any analysis.</p>
+<p>However, as some variables are being interpreted as numeric, we have
+to convert them to factor (categorical variable) before conducting any
+analysis.</p>
 <pre class="r"><code>hr$gender &lt;- factor(hr$gender)
 hr$KPIs_met_greater_80 &lt;- factor(hr$KPIs_met_greater_80)
 hr$awards_won &lt;- factor(hr$awards_won)
@@ -515,7 +567,10 @@ summary(hr)</code></pre>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Fitting a model</h1>
-<p>However, before fitting our model, we will split our data into <code>training</code> and <code>testing</code> data sets. To do this, we can use the <code>sample.split()</code> function from the <code>caTools</code> package.</p>
+<p>However, before fitting our model, we will split our data into
+<code>training</code> and <code>testing</code> data sets. To do this, we
+can use the <code>sample.split()</code> function from the
+<code>caTools</code> package.</p>
 <pre class="r"><code>library(&#39;caTools&#39;)
 set.seed(1)
 split &lt;- sample.split(hr$is_promoted, SplitRatio = 0.75)
@@ -560,7 +615,10 @@ summary(model)</code></pre>
 ## AIC: 18500
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
-<p>Now, we can use our fitted model to do predictions for <code>training</code> data set. Our objective here is to find a reasonable value for the threshold (<span class="math inline">\(\theta_0\)</span>).</p>
+<p>Now, we can use our fitted model to do predictions for
+<code>training</code> data set. Our objective here is to find a
+reasonable value for the threshold (<span
+class="math inline">\(\theta_0\)</span>).</p>
 <pre class="r"><code>predictTraining &lt;- predict(model, type = &#39;response&#39;)
 summary(predictTraining)</code></pre>
 <pre><code>##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
@@ -568,8 +626,16 @@ summary(predictTraining)</code></pre>
 <pre class="r"><code>tapply(predictTraining, hrTraining$is_promoted, mean)</code></pre>
 <pre><code>##          0          1 
 ## 0.07504518 0.19648269</code></pre>
-<p>These results show that for the true <code>is_promoted = 1</code> the average predicted probability is <span class="math inline">\(0.19\)</span>, while for the true <code>is_promoted = 0</code> the average predicted probability is <span class="math inline">\(0.08\)</span>. In this case, we want to choose a threshold <span class="math inline">\(\theta_0\)</span>, such that the prediction error (according to the above definitions) is as small as possible.</p>
-<p>So, let’s see the effect of different thresholds on the sensitivity and specificity of the classifier.</p>
+<p>These results show that for the true <code>is_promoted = 1</code> the
+average predicted probability is <span
+class="math inline">\(0.19\)</span>, while for the true
+<code>is_promoted = 0</code> the average predicted probability is <span
+class="math inline">\(0.08\)</span>. In this case, we want to choose a
+threshold <span class="math inline">\(\theta_0\)</span>, such that the
+prediction error (according to the above definitions) is as small as
+possible.</p>
+<p>So, let’s see the effect of different thresholds on the sensitivity
+and specificity of the classifier.</p>
 <pre class="r"><code># threshold = 0.75
 (tb1 &lt;- table(hrTraining$is_promoted, predictTraining &gt; 0.75))</code></pre>
 <pre><code>##    
@@ -601,8 +667,13 @@ summary(predictTraining)</code></pre>
 <pre class="r"><code>print(paste(&#39;Specificity: &#39;, round(tb3[1, 1] / (tb3[1, 1] + tb3[1, 2]), 3), sep = &#39;&#39;))</code></pre>
 <pre><code>## [1] &quot;Specificity: 0.948&quot;</code></pre>
 <p>How can we interpret these results?</p>
-<p>Actually, we can see that by increasing the threshold the sensitivity decreases while specificity increases. Alternatively, the contrary happens when we decrease the threshold.</p>
-<p>However, instead of testing these values manually, we will plot the Receiver Operating Characteristic (ROC) curve using the <code>prediction()</code> and <code>performance()</code> functions from the <code>ROCR</code> package.</p>
+<p>Actually, we can see that by increasing the threshold the sensitivity
+decreases while specificity increases. Alternatively, the contrary
+happens when we decrease the threshold.</p>
+<p>However, instead of testing these values manually, we will plot the
+Receiver Operating Characteristic (ROC) curve using the
+<code>prediction()</code> and <code>performance()</code> functions from
+the <code>ROCR</code> package.</p>
 <pre class="r"><code>library(&#39;ROCR&#39;)
 
 # First parameter is the vector of predicted probabilities, and
@@ -615,11 +686,25 @@ RPCRperf &lt;- performance(ROCRpred, &#39;tpr&#39;, &#39;fpr&#39;)
 
 plot(RPCRperf, colorize = TRUE, print.cutoffs.at = c(0, 0.05, 0.1, 0.5, 1.0))</code></pre>
 <p><img src="case_study_07_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
-<p>From the above plot, notice that the <code>sensitivity</code> is shown in the <code>y</code>-axis, and <code>1 - specificity</code> is shown in the <code>x</code>-axis. The curve always start at <span class="math inline">\((0, 0)\)</span> and always ends at <span class="math inline">\((1, 1)\)</span>. At <span class="math inline">\((0, 0)\)</span>, we will not get any false positive points, but we will not identify people who truly deserved to be promoted. On the other hand, at the endpoint we identify all people who deserved to be promoted, but the false positive rate is <span class="math inline">\(1\)</span>. Therefore, we want something in the middle (which depends on the problem).</p>
+<p>From the above plot, notice that the <code>sensitivity</code> is
+shown in the <code>y</code>-axis, and <code>1 - specificity</code> is
+shown in the <code>x</code>-axis. The curve always start at <span
+class="math inline">\((0, 0)\)</span> and always ends at <span
+class="math inline">\((1, 1)\)</span>. At <span
+class="math inline">\((0, 0)\)</span>, we will not get any false
+positive points, but we will not identify people who truly deserved to
+be promoted. On the other hand, at the endpoint we identify all people
+who deserved to be promoted, but the false positive rate is <span
+class="math inline">\(1\)</span>. Therefore, we want something in the
+middle (which depends on the problem).</p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
-<p>For a threshold of <span class="math inline">\(0.1\)</span> (meaning that I expect to promote approximately 60% of people who deserve it, and I am willing to promote 20% of people who do not deserve it), I have the following results for the <code>testing</code> data set.</p>
+<h1><span class="header-section-number">4</span> Predicting unknown
+values</h1>
+<p>For a threshold of <span class="math inline">\(0.1\)</span> (meaning
+that I expect to promote approximately 60% of people who deserve it, and
+I am willing to promote 20% of people who do not deserve it), I have the
+following results for the <code>testing</code> data set.</p>
 <pre class="r"><code>predictTesting &lt;- predict(model, type = &#39;response&#39;, newdata = hrTesting)
 (tb &lt;- table(hrTesting$is_promoted, predictTesting &gt;= 0.1))</code></pre>
 <pre><code>##    

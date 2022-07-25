@@ -321,7 +321,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Linear Models</a>
+      <a class="navbar-brand" href="index.html">ASDA</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -374,11 +374,20 @@ div.tocify {
 
 <div id="objectives" class="section level1 unnumbered">
 <h1 class="unnumbered">Objectives</h1>
-<p>In this case study, we will fit a Two-way ANOVA model, meaning that our dependent variable will be written as a function of two categorical regressor. The objective here will be checking for interaction between the factors, and see how we can interpret the effects in both scenarios, namely, “with interaction” and “with no interaction”. To do this, we will fit the model, check the assumptions, interpret it, and predict new values based on this fitted model.</p>
+<p>In this case study, we will fit a Two-way ANOVA model, meaning that
+our dependent variable will be written as a function of two categorical
+regressor. The objective here will be checking for interaction between
+the factors, and see how we can interpret the effects in both scenarios,
+namely, “with interaction” and “with no interaction”. To do this, we
+will fit the model, check the assumptions, interpret it, and predict new
+values based on this fitted model.</p>
 </div>
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>For this problem, we will study how the amount of carbon fiber and sand additions affect the hardness of a certain material. You can download the <code>.csv</code> file <a href="./datasets/hardness.csv">here</a>.</p>
+<p>For this problem, we will study how the amount of carbon fiber and
+sand additions affect the hardness of a certain material. You can
+download the <code>.csv</code> file <a
+href="./datasets/hardness.csv">here</a>.</p>
 <p>This data set contains the following variables:</p>
 <ol style="list-style-type: decimal">
 <li><code>sand</code> (multi-valued discrete)</li>
@@ -387,8 +396,12 @@ div.tocify {
 </ol>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Exploring the data set</h1>
-<p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
+<h1><span class="header-section-number">2</span> Exploring the data
+set</h1>
+<p>In order to explore the data set and perform initial analyses, we
+have to read it (with <code>R</code>) first. Provided that the
+<code>.csv</code> file is saved within the <code>datasets/</code>
+folder, one can read the file in the following way.</p>
 <pre class="r"><code>col.names &lt;- c(&#39;sand&#39;, &#39;carbon&#39;, &#39;hardness&#39;)
 hardness &lt;- read.csv(file = &#39;datasets/hardness.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
 head(hardness, 5)</code></pre>
@@ -407,7 +420,9 @@ head(hardness, 5)</code></pre>
 ##  Mean   :15   Mean   :0.25   Mean   :69.61  
 ##  3rd Qu.:30   3rd Qu.:0.50   3rd Qu.:74.00  
 ##  Max.   :30   Max.   :0.50   Max.   :74.00</code></pre>
-<p>As one can see from the above table, the multi-valued discrete attributes are being interpreted as numeric; however, we should set them as factor. For changing them, we can do the following</p>
+<p>As one can see from the above table, the multi-valued discrete
+attributes are being interpreted as numeric; however, we should set them
+as factor. For changing them, we can do the following</p>
 <pre class="r"><code>hardness$sand &lt;- factor(hardness$sand, levels = c(0, 15, 30), labels = c(&#39;lowS&#39;, &#39;medS&#39;, &#39;highS&#39;))
 hardness$carbon &lt;- factor(hardness$carbon, levels = c(0.00, 0.25, 0.50), labels = c(&#39;lowC&#39;, &#39;medC&#39;, &#39;highC&#39;))
 summary(hardness)</code></pre>
@@ -418,17 +433,32 @@ summary(hardness)</code></pre>
 ##                      Mean   :69.61  
 ##                      3rd Qu.:74.00  
 ##                      Max.   :74.00</code></pre>
-<p>Once we have the data, we can do a few plots that might help us understanding our problem. We can start by doing two different boxplots for the two categorical variables.</p>
+<p>Once we have the data, we can do a few plots that might help us
+understanding our problem. We can start by doing two different boxplots
+for the two categorical variables.</p>
 <pre class="r"><code>boxplot(hardness ~ sand, data = hardness)</code></pre>
 <p><img src="case_study_02_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <pre class="r"><code>boxplot(hardness ~ carbon, data = hardness)</code></pre>
 <p><img src="case_study_02_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
-<p>From both plots, it seems like there is a difference in one of the treatments (low doses for both sand and carbon) regarding the hardness of the material. However, we should only analyse the two factors separately if we can conclude that there is no interaction between them, meaning that there is no partial effect of one factor over the other. To see this, let’s use the <code>interaction.plot()</code> function to explore the possible interactions between the factors.</p>
+<p>From both plots, it seems like there is a difference in one of the
+treatments (low doses for both sand and carbon) regarding the hardness
+of the material. However, we should only analyse the two factors
+separately if we can conclude that there is no interaction between them,
+meaning that there is no partial effect of one factor over the other. To
+see this, let’s use the <code>interaction.plot()</code> function to
+explore the possible interactions between the factors.</p>
 <pre class="r"><code>interaction.plot(x.factor = hardness$sand, trace.factor = hardness$carbon, response = hardness$hardness)</code></pre>
 <p><img src="case_study_02_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <pre class="r"><code>interaction.plot(x.factor = hardness$carbon, trace.factor = hardness$sand, response = hardness$hardness)</code></pre>
 <p><img src="case_study_02_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
-<p>From the both plots above, the interactions (if any) do not seem to be important (since the lines are, more or less, parallel). As an important side note, if there is <strong>no</strong> interaction, the main effects (if significant) will tell us if there is variation among the levels of the factor in question; however, if modeled with interaction, the main effects may be difficult to be correctly explored and should be avoided. In this case, one may simply consider all pairs of levels as separate treatments.</p>
+<p>From the both plots above, the interactions (if any) do not seem to
+be important (since the lines are, more or less, parallel). As an
+important side note, if there is <strong>no</strong> interaction, the
+main effects (if significant) will tell us if there is variation among
+the levels of the factor in question; however, if modeled with
+interaction, the main effects may be difficult to be correctly explored
+and should be avoided. In this case, one may simply consider all pairs
+of levels as separate treatments.</p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Fitting a model</h1>
@@ -445,7 +475,12 @@ anova(model)</code></pre>
 ## Residuals    9  73.500   8.167                  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<p>As we can see from the above table (and p-values), we <strong>reject</strong> the hypothesis “sand have no significant effect on hardness”, we reject the hypothesis “carbon have no significant effect on hardness”, as we <strong>fail to reject</strong> the hypothesis “sand and carbon interaction have no significant on hardness”. Thus, we can fit the following simplified model</p>
+<p>As we can see from the above table (and p-values), we
+<strong>reject</strong> the hypothesis “sand have no significant effect
+on hardness”, we reject the hypothesis “carbon have no significant
+effect on hardness”, as we <strong>fail to reject</strong> the
+hypothesis “sand and carbon interaction have no significant on
+hardness”. Thus, we can fit the following simplified model</p>
 <pre class="r"><code>model2 &lt;- lm(formula = hardness ~ sand + carbon, data = hardness)
 anova(model2)</code></pre>
 <pre><code>## Analysis of Variance Table
@@ -457,7 +492,9 @@ anova(model2)</code></pre>
 ## Residuals 13  82.389   6.338                    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<p>Now, as <a href="./case_study_01.html">before</a>, we can compute the estimated means and effects for sand and carbon from <code>hardness ~ sand + carbon</code>.</p>
+<p>Now, as <a href="./case_study_01.html">before</a>, we can compute the
+estimated means and effects for sand and carbon from
+<code>hardness ~ sand + carbon</code>.</p>
 <pre class="r"><code>modAOV &lt;- aov(formula = hardness ~ sand + carbon, data = hardness)
 model.tables(modAOV, &#39;means&#39;)</code></pre>
 <pre><code>## Tables of means
@@ -487,7 +524,13 @@ model.tables(modAOV)</code></pre>
 ## carbon
 ##    lowC    medC   highC 
 ## -3.1111  1.5556  1.5556</code></pre>
-<p>Next, let’s do a residual analysis, so that we can make sure that our assumptions hold. We will plot the “Residuals vs. Fitted” and “Normal Q-Q” graphs, and conduct the appropriate tests, namely, <code>ncvTest()</code> (notice it is not the same as <code>leveneTest()</code>) and <code>shapiro.test()</code> (for <code>resid()</code>), for the equal variance and normally distributed residuals assumptions, respectively.</p>
+<p>Next, let’s do a residual analysis, so that we can make sure that our
+assumptions hold. We will plot the “Residuals vs. Fitted” and “Normal
+Q-Q” graphs, and conduct the appropriate tests, namely,
+<code>ncvTest()</code> (notice it is not the same as
+<code>leveneTest()</code>) and <code>shapiro.test()</code> (for
+<code>resid()</code>), for the equal variance and normally distributed
+residuals assumptions, respectively.</p>
 <pre class="r"><code>plot(model2, which = c(1, 2))</code></pre>
 <p><img src="case_study_02_files/figure-html/unnamed-chunk-9-1.png" width="672" /><img src="case_study_02_files/figure-html/unnamed-chunk-9-2.png" width="672" /></p>
 <pre class="r"><code>library(&#39;car&#39;)
@@ -501,8 +544,11 @@ ncvTest(model2)</code></pre>
 ## 
 ## data:  resid(model2)
 ## W = 0.96901, p-value = 0.779</code></pre>
-<p>As the p-values are large for both tests, the assumptions seem to hold. Also, the plots allow us to conclude the same. Therefore, <code>model2</code> might correctly model our problem.</p>
-<p>Also, as <a href="./case_study_01.html">before</a>, we can also do a pairwise analysis.</p>
+<p>As the p-values are large for both tests, the assumptions seem to
+hold. Also, the plots allow us to conclude the same. Therefore,
+<code>model2</code> might correctly model our problem.</p>
+<p>Also, as <a href="./case_study_01.html">before</a>, we can also do a
+pairwise analysis.</p>
 <pre class="r"><code>(modTuk &lt;- TukeyHSD(modAOV))</code></pre>
 <pre><code>##   Tukey multiple comparisons of means
 ##     95% family-wise confidence level
@@ -524,8 +570,11 @@ ncvTest(model2)</code></pre>
 <p><img src="case_study_02_files/figure-html/unnamed-chunk-10-1.png" width="672" /><img src="case_study_02_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
-<p>Finally, the predicted values for each combination of level of <code>sand</code> and <code>carbon</code> can be computed using the <code>predict()</code> function.</p>
+<h1><span class="header-section-number">4</span> Predicting unknown
+values</h1>
+<p>Finally, the predicted values for each combination of level of
+<code>sand</code> and <code>carbon</code> can be computed using the
+<code>predict()</code> function.</p>
 <pre class="r"><code>(newdata &lt;- data.frame(sand = factor(rep(c(&#39;lowS&#39;, &#39;medS&#39;, &#39;highS&#39;), each = 3)), carbon = factor(rep(c(&#39;lowC&#39;, &#39;medC&#39;, &#39;highC&#39;), times = 3))))</code></pre>
 <pre><code>##    sand carbon
 ## 1  lowS   lowC
