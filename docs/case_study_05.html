@@ -521,7 +521,7 @@ summary(model2)</code></pre>
 ## Residual standard error: 0.8244 on 18 degrees of freedom
 ## Multiple R-squared:  0.9991, Adjusted R-squared:  0.9989 
 ## F-statistic:  4179 on 5 and 18 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>Now, let’s remove <code>coarse_aggregate</code>.</p>
+<p>Now, let’s remove <code>var3</code>.</p>
 <pre class="r"><code>model3 &lt;- update(model2, ~. - var3)
 summary(model3)</code></pre>
 <pre><code>## 

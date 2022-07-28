@@ -74,7 +74,7 @@ model2 <- update(model, ~. - var4)
 summary(model2)
 ```
 
-Now, let's remove `coarse_aggregate`.
+Now, let's remove `var3`.
 
 ```{r}
 model3 <- update(model2, ~. - var3)
