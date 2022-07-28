@@ -134,7 +134,7 @@ bc <- boxCox(model)
 (lambda <- bc$x[which.max(bc$y)])
 ```
 
-Now, let's create a function to transform our data based on the value of $\lambda$ and based on the above rule. We will name it `tranfData()`. Also, we will create a function to transform our data back to the original scale. We will name it `tranfData_back()`. This second function, if $\lambda = 0$, will be given by $y(\lambda) = (w\lambda + 1)^{1/\lambda}$.
+Now, let's create a function to transform our data based on the value of $\lambda$ and based on the above rule. We will name it `tranfData()`. Also, we will create a function to transform our data back to the original scale. We will name it `tranfData_back()`. This second function, if $\lambda \neq 0$, will be given by $y(\lambda) = (w\lambda + 1)^{1/\lambda}$.
 
 ```{r}
 transfData <- function (data, lambda) { ((data ^ lambda - 1) / lambda) }
@@ -170,6 +170,8 @@ shapiro.test(resid(model2))
 ```
 
 As we would expect, the results look much better now. However, we can still use information about `year`, which seems to play a role in explaining the response variable. That being said, let's fit this new model.
+
+Notice that we will consider a model with interaction (*an interaction occurs when an independent variable has a different effect on the outcome depending on the values of another independent variable*). For an extensive discussion on this topic, one can refer to [this link](https://www.medicine.mcgill.ca/epidemiology/joseph/courses/EPIB-621/interaction.pdf). 
 
 ```{r}
 model3 <- lm(formula = mpg_transf ~ hp * year, data = car3)

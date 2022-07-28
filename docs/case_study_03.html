@@ -595,7 +595,7 @@ of <span class="math inline">\(\lambda\)</span> and based on the above
 rule. We will name it <code>tranfData()</code>. Also, we will create a
 function to transform our data back to the original scale. We will name
 it <code>tranfData_back()</code>. This second function, if <span
-class="math inline">\(\lambda = 0\)</span>, will be given by <span
+class="math inline">\(\lambda \neq 0\)</span>, will be given by <span
 class="math inline">\(y(\lambda) = (w\lambda +
 1)^{1/\lambda}\)</span>.</p>
 <pre class="r"><code>transfData &lt;- function (data, lambda) { ((data ^ lambda - 1) / lambda) }
@@ -657,6 +657,13 @@ conduct the appropriate tests.</p>
 still use information about <code>year</code>, which seems to play a
 role in explaining the response variable. That being said, let’s fit
 this new model.</p>
+<p>Notice that we will consider a model with interaction (<em>an
+interaction occurs when an independent variable has a different effect
+on the outcome depending on the values of another independent
+variable</em>). For an extensive discussion on this topic, one can refer
+to <a
+href="https://www.medicine.mcgill.ca/epidemiology/joseph/courses/EPIB-621/interaction.pdf">this
+link</a>.</p>
 <pre class="r"><code>model3 &lt;- lm(formula = mpg_transf ~ hp * year, data = car3)
 summary(model3)</code></pre>
 <pre><code>## 
