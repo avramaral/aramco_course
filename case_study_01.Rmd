@@ -113,10 +113,7 @@ Finally, we can also do a pairwise comparison among the treatments. In this case
 plot(modTuk)
 ```
 
-As we can see from the table and the plot, we fail to reject that the means for the pairs `B-A`, `C-A`, and `C-B` are different, but we reject the null hypothesis for the pairs `D-A`, `D-B`, and `D-C`. Meaning that mixing type `D` is different from the rest, but the others cannot be distinguished.
-
-So the question is, **if you had to choose a mixing type, which one would you pick?**
-
+As we can see from the table and the plot, we fail to reject that the means for the pairs `B-A`, `C-A`, and `C-B` are equal, but we reject the null hypothesis for the pairs `D-A`, `D-B`, and `D-C`. Meaning that mixing type `D` is different from the rest, but the others cannot be distinguished.
 
 # Predicting unknown values
 
