@@ -375,14 +375,24 @@ div.tocify {
 </div>
 
 
-<div id="introduction" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> Introduction</h1>
+<div id="objectives" class="section level1 unnumbered">
+<h1 class="unnumbered">Objectives</h1>
 <p>In this tutorial session, we will see how to read, manipulate and
 visualize data. The main reference for this session is the <a
 href="https://r4ds.had.co.nz/">R for Data Science</a> book, which is
 freely available online.</p>
-<p>Throughout this problem set, consider the following scenario. Let
-<span class="math inline">\(\{y_{it}; i = 1, \cdots, I; t = 1, \cdots,
+</div>
+<div id="introduction" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>For this problem set, we will use the following libraries</p>
+<pre class="r"><code>library(tidyverse)
+library(lubridate)
+library(zoo)
+library(rgeoboundaries)
+library(patchwork)
+library(viridis)</code></pre>
+<p>Throughout the tutorial, consider the following scenario. Let <span
+class="math inline">\(\{y_{it}; i = 1, \cdots, I; t = 1, \cdots,
 T\}\)</span> denotes a multivariate time series of disease counts in
 each Saudi Arabia region, such that <span class="math inline">\(I =
 13\)</span> refers to the number of considered regions and <span
@@ -400,25 +410,26 @@ size and proportion of men in each region, as well as the number of
 deaths linked to each element of the <span
 class="math inline">\(\{y_{it}\}_{it}\)</span> series.</p>
 <p>You can download the <code>.csv</code> file <a
-href="./datasets/r4ds.csv">here</a>. And you read the file in the
-following way</p>
+href="./datasets/r4ds.csv">here</a>. And you read the file and convert
+it to a <code>tibble</code> object in the following way</p>
 <pre class="r"><code>data &lt;- read.csv(file = &#39;datasets/r4ds.csv&#39;, sep = &#39;,&#39;)
+data &lt;- as_tibble(data)
+data$date &lt;- ymd(data$date)
+
 head(data, 5)</code></pre>
-<pre><code>##         date           region n_cases     pop  men_prop n_deaths
-## 1 2018-01-01          Eastern      33 4105780 0.4029141        3
-## 2 2018-01-01           Najran      23  505652 0.4856072        1
-## 3 2018-01-01 Northern Borders      30  320524 0.6664768        6
-## 4 2018-01-01            Ha’il      36  597144 0.6009460        3
-## 5 2018-01-01           Riyadh      38 6777146 0.5585120        6</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   date       region           n_cases     pop men_prop n_deaths
+##   &lt;date&gt;     &lt;chr&gt;              &lt;int&gt;   &lt;int&gt;    &lt;dbl&gt;    &lt;int&gt;
+## 1 2018-01-01 Eastern               33 4105780    0.403        3
+## 2 2018-01-01 Najran                23  505652    0.486        1
+## 3 2018-01-01 Northern Borders      30  320524    0.666        6
+## 4 2018-01-01 Ha’il                 36  597144    0.601        3
+## 5 2018-01-01 Riyadh                38 6777146    0.559        6</code></pre>
 <p>The code to generated such a data set can be found <a
 href="./datasets/codeR.R">here</a>.</p>
-<p>Also, we will need the following libraries</p>
-<pre class="r"><code>library(tidyverse)
-library(lubridate)
-library(zoo)
-library(rgeoboundaries)
-library(patchwork)
-library(viridis)</code></pre>
+</div>
+<div id="data-manipulation" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Data manipulation</h1>
 <p>Now, to manipulate our data set, we will use the <code>dplyr</code>
 package. From , we can see that there are 5 main methods, namely,
 <code>mutate()</code>, <code>select()</code>, <code>filter()</code>,
@@ -428,9 +439,11 @@ package. From , we can see that there are 5 main methods, namely,
 pipe operator <code>%&gt;%</code> (in <code>RStudio</code>, you may use
 the shortcut <code>Ctrl + Shift + M</code>).</p>
 <pre class="r"><code>data %&gt;% select(date, region, n_cases) %&gt;% head(3)</code></pre>
-<pre><code>##         date           region n_cases
-## 1 2018-01-01          Eastern      33
-## 2 2018-01-01           Najran      23
+<pre><code>## # A tibble: 3 × 3
+##   date       region           n_cases
+##   &lt;date&gt;     &lt;chr&gt;              &lt;int&gt;
+## 1 2018-01-01 Eastern               33
+## 2 2018-01-01 Najran                23
 ## 3 2018-01-01 Northern Borders      30</code></pre>
 <pre class="r"><code># Alternatively, 
 # data %&gt;% select(-pop, -men_prop, -n_deaths) %&gt;% head(3)
@@ -439,7 +452,9 @@ the shortcut <code>Ctrl + Shift + M</code>).</p>
 functions that can be combined with <code>select()</code>. For instance,
 select all columns that start with “<code>n_</code>”.</p>
 <pre class="r"><code>data %&gt;% select(starts_with(&#39;n_&#39;)) %&gt;% head(3)</code></pre>
-<pre><code>##   n_cases n_deaths
+<pre><code>## # A tibble: 3 × 2
+##   n_cases n_deaths
+##     &lt;int&gt;    &lt;int&gt;
 ## 1      33        3
 ## 2      23        1
 ## 3      30        6</code></pre>
@@ -448,10 +463,12 @@ select all columns that start with “<code>n_</code>”.</p>
 the dates and regions for which the number of cases is greater than
 40.</p>
 <pre class="r"><code>data %&gt;% filter(n_cases &gt; 30) %&gt;% select(date, region) %&gt;% head(3)</code></pre>
-<pre><code>##         date  region
+<pre><code>## # A tibble: 3 × 2
+##   date       region 
+##   &lt;date&gt;     &lt;chr&gt;  
 ## 1 2018-01-01 Eastern
-## 2 2018-01-01   Ha’il
-## 3 2018-01-01  Riyadh</code></pre>
+## 2 2018-01-01 Ha’il  
+## 3 2018-01-01 Riyadh</code></pre>
 <p>Also, select the date, name of the region, number of cases, and
 number of deaths for which the region is Eastern or Najran
 <code>AND</code> the date is greater than <code>2019-01-01</code> (you
@@ -459,9 +476,11 @@ may want to use the <code>lubridate</code> package to deal with
 dates).</p>
 <pre class="r"><code>data %&gt;% filter(region %in% c(&#39;Eastern&#39;, &#39;Najran&#39;), date &gt; ymd(&#39;2019-01-01&#39;)) %&gt;% 
   select(date, region, n_cases, n_deaths) %&gt;% head(3)</code></pre>
-<pre><code>##         date  region n_cases n_deaths
+<pre><code>## # A tibble: 3 × 4
+##   date       region  n_cases n_deaths
+##   &lt;date&gt;     &lt;chr&gt;     &lt;int&gt;    &lt;int&gt;
 ## 1 2019-02-01 Eastern      26        7
-## 2 2019-02-01  Najran       2        0
+## 2 2019-02-01 Najran        2        0
 ## 3 2019-03-01 Eastern      83       13</code></pre>
 <p>Now, select the date, name of the region, number of cases, and number
 of deaths for which the number of cases is larger than <code>700</code>
@@ -470,17 +489,21 @@ arrange, in a descending order for <code>n_cases</code>, the
 results.</p>
 <pre class="r"><code>data %&gt;% filter(n_deaths == 10 | n_cases &gt; 700) %&gt;% 
   select(date, region, n_cases, n_deaths) %&gt;% arrange(desc(n_cases)) %&gt;% head(3)</code></pre>
-<pre><code>##         date region n_cases n_deaths
-## 1 2018-05-01  Mecca     792       93
+<pre><code>## # A tibble: 3 × 4
+##   date       region n_cases n_deaths
+##   &lt;date&gt;     &lt;chr&gt;    &lt;int&gt;    &lt;int&gt;
+## 1 2018-05-01 Mecca      792       93
 ## 2 2018-05-01 Riyadh     719      121
-## 3 2019-05-01  Ha’il      94       10</code></pre>
+## 3 2019-05-01 Ha’il       94       10</code></pre>
 <p>Finally, using the <code>mutate()</code> function, create a new
 column into the original data set that shows the cumulative sum for the
 number of deaths (and name it <code>cum_deaths</code>), and select the
 number of deaths and this newly created column.</p>
 <pre class="r"><code>data %&gt;% mutate(cum_deaths = cumsum(n_deaths)) %&gt;% 
   select(ends_with(&#39;deaths&#39;)) %&gt;% head(3)</code></pre>
-<pre><code>##   n_deaths cum_deaths
+<pre><code>## # A tibble: 3 × 2
+##   n_deaths cum_deaths
+##      &lt;int&gt;      &lt;int&gt;
 ## 1        3          3
 ## 2        1          4
 ## 3        6         10</code></pre>
@@ -500,10 +523,12 @@ columns.</p>
   drop_na(n_cases_lag2) %&gt;% 
   select(-date, -region) %&gt;% 
   head(3)</code></pre>
-<pre><code>##   n_cases     pop  men_prop n_deaths n_cases_lag2 n_deaths_lag3
-## 1      30  320524 0.6664768        6           33            NA
-## 2      36  597144 0.6009460        3           23             3
-## 3      38 6777146 0.5585120        6           30             1</code></pre>
+<pre><code>## # A tibble: 3 × 6
+##   n_cases     pop men_prop n_deaths n_cases_lag2 n_deaths_lag3
+##     &lt;int&gt;   &lt;int&gt;    &lt;dbl&gt;    &lt;int&gt;        &lt;int&gt;         &lt;int&gt;
+## 1      30  320524    0.666        6           33            NA
+## 2      36  597144    0.601        3           23             3
+## 3      38 6777146    0.559        6           30             1</code></pre>
 <p>Now, the goal is work with the <code>group_by()</code> function. To
 do this, group the data set by region, and select the three first
 columns.</p>
@@ -511,7 +536,7 @@ columns.</p>
 <pre><code>## # A tibble: 3 × 3
 ## # Groups:   region [3]
 ##   date       region           n_cases
-##   &lt;chr&gt;      &lt;chr&gt;              &lt;int&gt;
+##   &lt;date&gt;     &lt;chr&gt;              &lt;int&gt;
 ## 1 2018-01-01 Eastern               33
 ## 2 2018-01-01 Najran                23
 ## 3 2018-01-01 Northern Borders      30</code></pre>
@@ -527,7 +552,7 @@ date.</p>
 <pre><code>## # A tibble: 14 × 7
 ## # Groups:   date [2]
 ##    date       region           n_cases men_prop n_deaths norm_cases cumsum
-##    &lt;chr&gt;      &lt;chr&gt;              &lt;int&gt;    &lt;dbl&gt;    &lt;int&gt;      &lt;dbl&gt;  &lt;dbl&gt;
+##    &lt;date&gt;     &lt;chr&gt;              &lt;int&gt;    &lt;dbl&gt;    &lt;int&gt;      &lt;dbl&gt;  &lt;dbl&gt;
 ##  1 2018-01-01 Eastern               33    0.403        3     0.0862 0.0862
 ##  2 2018-01-01 Najran                23    0.486        1     0.0601 0.146 
 ##  3 2018-01-01 Northern Borders      30    0.666        6     0.0783 0.225 
@@ -551,8 +576,10 @@ number of rows.</p>
             var_n_cases = var(n_cases, na.rm = TRUE),
             mean_n_deaths = mean(n_deaths, na.rm = TRUE),
             var_n_deaths = var(n_deaths, na.rm = TRUE), n = n())</code></pre>
-<pre><code>##   mean_n_cases var_n_cases mean_n_deaths var_n_deaths   n
-## 1     63.90812    11830.49      9.764957     293.5463 468</code></pre>
+<pre><code>## # A tibble: 1 × 5
+##   mean_n_cases var_n_cases mean_n_deaths var_n_deaths     n
+##          &lt;dbl&gt;       &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt; &lt;int&gt;
+## 1         63.9      11830.          9.76         294.   468</code></pre>
 <p>Notice that the result from the above item is not very impressive,
 but we can combine it with <code>group_by()</code> to get more
 meaningful statistics. For instance, obtain similar results as before,
@@ -590,52 +617,79 @@ consider the following data set, which shows the (fake) mean temperature
 Assuming the previous data set is in <code>data</code>,</p>
 <pre class="r"><code>set.seed(0)
 n &lt;- (nrow(data) - 3)
-new_data &lt;- tibble(id = 1:n, date = data$date[1:n], region = data$region[1:n], temperature = round(rnorm(n, 30, 2), 1))</code></pre>
+new_data &lt;- tibble(id = 1:n, date = data$date[1:n], region = data$region[1:n], temperature = round(rnorm(n, 30, 2), 1))
+new_data</code></pre>
+<pre><code>## # A tibble: 465 × 4
+##       id date       region           temperature
+##    &lt;int&gt; &lt;date&gt;     &lt;chr&gt;                  &lt;dbl&gt;
+##  1     1 2018-01-01 Eastern                 32.5
+##  2     2 2018-01-01 Najran                  29.3
+##  3     3 2018-01-01 Northern Borders        32.7
+##  4     4 2018-01-01 Ha’il                   32.5
+##  5     5 2018-01-01 Riyadh                  30.8
+##  6     6 2018-01-01 Asir                    26.9
+##  7     7 2018-01-01 Mecca                   28.1
+##  8     8 2018-01-01 Tabuk                   29.4
+##  9     9 2018-01-01 Medina                  30  
+## 10    10 2018-01-01 Qasim                   34.8
+## # … with 455 more rows</code></pre>
 <p>Notice that there is a column named <code>id</code> on
 <code>new_data</code>. We will need it to link the new tibble to the old
 one. Thus, let’s create a similar column in <code>data</code>.</p>
 <pre class="r"><code>data &lt;- data %&gt;% add_column(id = 1:(nrow(data))) %&gt;% select(c(7, 1:6))
 head(data, 1)</code></pre>
-<pre><code>##   id       date  region n_cases     pop  men_prop n_deaths
-## 1  1 2018-01-01 Eastern      33 4105780 0.4029141        3</code></pre>
+<pre><code>## # A tibble: 1 × 7
+##      id date       region  n_cases     pop men_prop n_deaths
+##   &lt;int&gt; &lt;date&gt;     &lt;chr&gt;     &lt;int&gt;   &lt;int&gt;    &lt;dbl&gt;    &lt;int&gt;
+## 1     1 2018-01-01 Eastern      33 4105780    0.403        3</code></pre>
 <p>Now, we can incorporate the new data into the original tibble by
 using, for example, the <code>left_join()</code> function.</p>
 <pre class="r"><code>data %&gt;% left_join(new_data %&gt;% select(id, temperature), by = &#39;id&#39;) %&gt;% 
   tail(1)</code></pre>
-<pre><code>##      id       date  region n_cases    pop  men_prop n_deaths temperature
-## 468 468 2020-12-01 Al Jawf       2 440009 0.2975002        0          NA</code></pre>
+<pre><code>## # A tibble: 1 × 8
+##      id date       region  n_cases    pop men_prop n_deaths temperature
+##   &lt;int&gt; &lt;date&gt;     &lt;chr&gt;     &lt;int&gt;  &lt;int&gt;    &lt;dbl&gt;    &lt;int&gt;       &lt;dbl&gt;
+## 1   468 2020-12-01 Al Jawf       2 440009    0.298        0          NA</code></pre>
 </div>
-<div id="main-section" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Main Section</h1>
-<p>For this section, from the original data set, create an object that
-contains the columns <code>date</code>, <code>region</code>,
-<code>n_men</code>, <code>n_women</code>, <code>n_cases</code>, and
-<code>n_deaths</code>, such that <code>n_men</code> and
-<code>n_women</code> correspond to the number of men and the number of
-women, respectively (to do this, recall that <code>men_prop</code>
-represents the proportion of men in the population for a given
-region).</p>
+<div id="data-visualization" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Data visualization</h1>
+<p>For this section, we will use <code>ggplot2</code> to produce
+different plots.</p>
+<div id="data-preparation" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Data preparation</h2>
+<p>From the original data set, create an object that contains the
+columns <code>date</code>, <code>region</code>, <code>n_men</code>,
+<code>n_women</code>, <code>n_cases</code>, and <code>n_deaths</code>,
+such that <code>n_men</code> and <code>n_women</code> correspond to the
+number of men and the number of women, respectively (to do this, recall
+that <code>men_prop</code> represents the proportion of men in the
+population for a given region).</p>
 <pre class="r"><code>data &lt;- data %&gt;% mutate(women_prop = 1 - men_prop) %&gt;%
           mutate(n_men = pop * men_prop) %&gt;% 
           mutate(n_women = pop * women_prop) %&gt;% 
           select(date, region, n_men, n_women, n_cases, n_deaths)
 head(data, 7)</code></pre>
-<pre><code>##         date           region     n_men   n_women n_cases n_deaths
-## 1 2018-01-01          Eastern 1654276.5 2451503.5      33        3
-## 2 2018-01-01           Najran  245548.2  260103.8      23        1
-## 3 2018-01-01 Northern Borders  213621.8  106902.2      30        6
-## 4 2018-01-01            Ha’il  358851.3  238292.7      36        3
-## 5 2018-01-01           Riyadh 3785117.5 2992028.5      38        6
-## 6 2018-01-01             Asir  850467.7 1062924.3      21        4
-## 7 2018-01-01            Mecca 2086623.2 4828382.8      40        9</code></pre>
+<pre><code>## # A tibble: 7 × 6
+##   date       region              n_men  n_women n_cases n_deaths
+##   &lt;date&gt;     &lt;chr&gt;               &lt;dbl&gt;    &lt;dbl&gt;   &lt;int&gt;    &lt;int&gt;
+## 1 2018-01-01 Eastern          1654276. 2451504.      33        3
+## 2 2018-01-01 Najran            245548.  260104.      23        1
+## 3 2018-01-01 Northern Borders  213622.  106902.      30        6
+## 4 2018-01-01 Ha’il             358851.  238293.      36        3
+## 5 2018-01-01 Riyadh           3785117. 2992029.      38        6
+## 6 2018-01-01 Asir              850468. 1062924.      21        4
+## 7 2018-01-01 Mecca            2086623. 4828383.      40        9</code></pre>
+</div>
+<div id="plotting" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Plotting</h2>
 <p>Now, the main goal is visualize the studied data set. To do this, we
 will mainly rely on the <code>ggplot2</code> library, which is also
 included in the <code>tidyverse</code> universe.</p>
 <p>Start by creating a line chart for the number of cases in each region
-(all in the same plot) over the months (When I tried to plot it in my
+(all in the same plot) over the months (when I tried to plot it in my
 <code>RMarkdown</code> document, I had problems with the
 <code>Ha’il</code> name. If the same happens to you, try to replace it
-by <code>Hail</code>.). Map <code>region</code> to
+by <code>Hail</code>). Map <code>region</code> to
 <code>color</code>.</p>
 <pre class="r"><code>data &lt;- data %&gt;% mutate(region = replace(region, region == &#39;Ha’il&#39;, &#39;Hail&#39;))</code></pre>
 <pre class="r"><code>ggplot(data = data, 
@@ -644,8 +698,6 @@ by <code>Hail</code>.). Map <code>region</code> to
   theme_bw() + 
   labs(x = &#39;Date&#39;, y = &#39;Number of Cases&#39;, color = &#39;Region&#39;) + 
   theme(text = element_text(family = &#39;LM Roman 10&#39;))</code></pre>
-<pre><code>## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?</code></pre>
 <p><img src="R4DS_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
 <p>When plotting, we can also map more than one property at a time. For
 instance, plot a dot chart for the number of cases in each region over
@@ -680,11 +732,6 @@ same time series.</p>
                                  &#39;solid_red&#39; = alpha(&#39;red&#39;, 1.00)),
                       labels = c(&#39;Original data&#39;, &#39;Moving average&#39;)) +
   theme(text = element_text(family = &#39;LM Roman 10&#39;))</code></pre>
-<pre><code>## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?</code></pre>
-<pre><code>## Warning: Removed 2 row(s) containing missing values (geom_path).</code></pre>
-<pre><code>## geom_path: Each group consists of only one observation. Do you need to adjust
-## the group aesthetic?</code></pre>
 <p><img src="R4DS_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 <p>Now, we will plot the map of Saudi Arabia divided into the given
 regions. To do this, we will need to work with a <code>shapefile</code>
@@ -695,9 +742,9 @@ such data. For instance, we can use the
 from the <code>rgeoboundaries</code> package to obtain the desired data
 set.</p>
 <p>After downloading the data, you can plot it using the
-<code>ggplot(data) + geom_sf()</code> functions (Depending on what you
+<code>ggplot(data) + geom_sf()</code> functions (depending on what you
 are trying to do, you may have to install (and load) the <code>sp</code>
-and/or <code>sf</code> libraries.).</p>
+and/or <code>sf</code> libraries).</p>
 <pre class="r"><code>KSA_shape &lt;- geoboundaries(&#39;Saudi Arabia&#39;, adm_lvl = &#39;adm1&#39;)
 KSA_shape$shapeName &lt;- data$region[1:13]
 
@@ -707,15 +754,13 @@ ggplot(data = KSA_shape) +
   theme_bw() + 
   labs(x = &#39;Longitude&#39;, y = &#39;Latitude&#39;, title = &#39;Map of Saudi Arabia&#39;) + 
   theme(text = element_text(family = &#39;LM Roman 10&#39;))</code></pre>
-<pre><code>## Warning in st_point_on_surface.sfc(sf::st_zm(x)): st_point_on_surface may not
-## give correct results for longitude/latitude data</code></pre>
 <p><img src="R4DS_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
 <p>As a final task, plot two versions of the above map side-by-side. On
 the left, the colors should represent the population size for men in
-each region; similarly, on the right, the population size for women (To
+each region; similarly, on the right, the population size for women (to
 combine plots in this way, you may want to use the
 <code>patchwork</code> package. And for different colour palettes, you
-may use the <code>viridis</code> package.). Use the same scale, so that
+may use the <code>viridis</code> package). Use the same scale, so that
 the values are comparable.</p>
 <pre class="r"><code>KSA_shape$n_men &lt;- data$n_men[1:13]
 KSA_shape$n_women &lt;- data$n_women[1:13]
@@ -744,15 +789,11 @@ women &lt;- ggplot(data = KSA_shape) +
          theme(text = element_text(family = &#39;LM Roman 10&#39;))
 
 combined &lt;- men + women  + plot_layout(guides = &#39;collect&#39;, ncol = 1) &amp;
-              theme(legend.position = &#39;right&#39;, legend.key.height = unit(3, &#39;cm&#39;))
+              theme(legend.position = &#39;right&#39;, legend.key.height = unit(1.25, &#39;cm&#39;))
 
 print(combined)</code></pre>
-<pre><code>## Warning in st_point_on_surface.sfc(sf::st_zm(x)): st_point_on_surface may not
-## give correct results for longitude/latitude data
-
-## Warning in st_point_on_surface.sfc(sf::st_zm(x)): st_point_on_surface may not
-## give correct results for longitude/latitude data</code></pre>
-<p><img src="R4DS_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p><img src="R4DS_files/figure-html/unnamed-chunk-23-1.png" width="576" /></p>
+</div>
 </div>
 
 
