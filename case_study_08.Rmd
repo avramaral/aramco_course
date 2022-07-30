@@ -132,7 +132,8 @@ $$
 $$
 we can say that
 
-* The expected log count for a one-unit increase in `math` is $0.070$.
+* The expected log count for a one-unit increase in `math` is $0.070$. Alternatively, increasing by one unit the $x_j$ variable is equivalent to a multiplicative change in the response variable by $\exp\{\beta_j\}$ (holding the rest of variables constant).
+
 * The expected log count for "Academic program" (in comparison to the "General program") increases in $1.085$.
 
 Finally, we can also plot the expected number of awards grouped by `program`.
