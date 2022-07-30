@@ -28,10 +28,7 @@ Throughout the tutorial, consider the following scenario. Let $\{y_{it}; i = 1, 
 
 You can download the `.csv` file [here](./datasets/r4ds.csv). And you read the file and convert it to a `tibble` object in the following way
 ```{r}
-data <- read.csv(file = 'datasets/r4ds.csv', sep = ',')
-data <- as_tibble(data)
-data$date <- ymd(data$date)
-
+data <- readr::read_csv(file = 'datasets/r4ds.csv')
 head(data, 5)
 ```
 
