@@ -19,6 +19,8 @@ navbar:
       href: case_study_07.html
     - text: 'Case Study 08'
       href: case_study_08.html
+    - text: 'R4DS'
+      href: R4DS.html
   right:
     - icon: fa-globe
       href: https://avramaral.github.io/

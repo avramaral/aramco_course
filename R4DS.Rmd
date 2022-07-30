@@ -1,0 +1,261 @@
+---
+title: 'R4DS'
+author: 'André Victor Ribeiro Amaral'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Introduction
+
+In this tutorial session, we will see how to read, manipulate and visualize data. The main reference for this session is the [R for Data Science](https://r4ds.had.co.nz/) book, which is freely available online.
+
+Throughout this problem set, consider the following scenario. Let $\{y_{it}; i = 1, \cdots, I; t = 1, \cdots, T\}$ denotes a multivariate time series of disease counts in each Saudi Arabia region, such that $I = 13$ refers to the number of considered regions and $T = 36$ to the length of the time series. In particular, we will model $Y_{it}|Y_{i,(t-1)} = y_{i,(t-1)} \sim \text{Poisson}(\lambda_{it})$, such that $\log(\lambda_{it}) = \beta_0 + e_{i} + \beta_1 \cdot t + \beta_2 \cdot \sin(\omega t) + \beta_3 \cdot \cos(\omega t)$, where $e_i$ corresponds to the population fraction in region $i$ and $\omega = 2\pi / 12$. Also, we have information about the population size and proportion of men in each region, as well as the number of deaths linked to each element of the $\{y_{it}\}_{it}$ series.
+
+You can download the `.csv` file [here](./datasets/r4ds.csv). And you read the file in the following way
+```{r}
+data <- read.csv(file = 'datasets/r4ds.csv', sep = ',')
+head(data, 5)
+```
+
+The code to generated such a data set can be found [here](./datasets/codeR.R).
+
+Also, we will need the following libraries
+```{r, results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(zoo)
+library(rgeoboundaries)
+library(patchwork)
+library(viridis)
+```
+
+Now, to manipulate our data set, we will use the `dplyr` package. From \href{https://dplyr.tidyverse.org/}{its documentation}, we can see that there are 5 main methods, namely, `mutate()`, `select()`, `filter()`, `summarise()`, and `arrange()`.
+
+Start by selecting the `date`, `region`, and `n_cases` from our original data set. To do this, use the pipe operator `%>%` (in `RStudio`, you may use the shortcut `Ctrl + Shift + M`).
+
+```{r}
+data %>% select(date, region, n_cases) %>% head(3)
+# Alternatively, 
+# data %>% select(-pop, -men_prop, -n_deaths) %>% head(3)
+# data %>% select(date:n_cases) %>% head(3)
+```
+
+Using `?tidyselect::select_helpers`, one may find useful functions that can be combined with `select()`. For instance, select all columns that start with "`n_`".
+```{r}
+data %>% select(starts_with('n_')) %>% head(3)
+```
+
+Aiming to obtain more meaningful sliced data sets, use the `filter()` and `select()` functions to select the the dates and regions for which the number of cases is greater than 40.
+
+```{r}
+data %>% filter(n_cases > 30) %>% select(date, region) %>% head(3)
+```
+
+Also, select the date, name of the region, number of cases, and number of deaths for which the region is Eastern or Najran `AND` the date is greater than `2019-01-01` (you may want to use the `lubridate` package to deal with dates). 
+
+```{r}
+data %>% filter(region %in% c('Eastern', 'Najran'), date > ymd('2019-01-01')) %>% 
+  select(date, region, n_cases, n_deaths) %>% head(3)
+```
+
+Now, select the date, name of the region, number of cases, and number of deaths for which the number of cases is larger than `700` `OR` the number of deaths is equal to `10` and arrange, in a descending order for `n_cases`, the results.
+
+```{r}
+data %>% filter(n_deaths == 10 | n_cases > 700) %>% 
+  select(date, region, n_cases, n_deaths) %>% arrange(desc(n_cases)) %>% head(3)
+```
+
+Finally, using the `mutate()` function, create a new column into the original data set that shows the cumulative sum for the number of deaths (and name it `cum_deaths`), and select the number of deaths and this newly created column.
+
+```{r}
+data %>% mutate(cum_deaths = cumsum(n_deaths)) %>% 
+  select(ends_with('deaths')) %>% head(3)
+```
+
+**Remark:** `cummin()`, `cummax()`, `cummean()`, `lag()`, etc. are examples of functions that can be used with `mutate()`.
+
+Using the `lag()` and `drop_na()` functions, create a new column named `n_cases_lag2` and another one named `n_deaths_lag3` that are copies of `n_cases` and `n_deaths` but with lags 2 and 3, respectively. Then, drop the rows with `NA`s in the `n_cases_lag2` column and select all but the `date` and `region` columns.
+
+```{r}
+data %>% mutate(n_cases_lag2 = lag(n_cases, 2),
+                n_deaths_lag3 = lag(n_deaths, 3)) %>% 
+  drop_na(n_cases_lag2) %>% 
+  select(-date, -region) %>% 
+  head(3)
+```
+
+Now, the goal is work with the `group_by()` function. To do this, group the data set by region, and select the three first columns.
+
+```{r}
+data %>% group_by(region) %>% select(1:3) %>% head(3)
+```
+
+Combining a few different functions, select all but the `pop` column and create a new one (named `norm_cases`) that shows the normalized number of cases by date.
+
+```{r}
+data %>% group_by(date) %>% 
+  mutate(norm_cases = n_cases/sum(n_cases), 
+         cumsum = cumsum(norm_cases)) %>% 
+  select(-pop) %>% 
+  head(14)
+```
+
+Using the `summarise()` (or `summarize()`) function, get the average and variance for the variables `n_cases` and `n_deaths`, as well as the total number of rows.
+
+```{r}
+data %>% select(n_cases, n_deaths) %>% 
+  summarize(mean_n_cases = mean(n_cases, na.rm = TRUE),
+            var_n_cases = var(n_cases, na.rm = TRUE),
+            mean_n_deaths = mean(n_deaths, na.rm = TRUE),
+            var_n_deaths = var(n_deaths, na.rm = TRUE), n = n())
+```
+
+Notice that the result from the above item is not very impressive, but we can combine it with `group_by()` to get more meaningful statistics. For instance, obtain similar results as before, but for each region.
+
+```{r}
+data %>% group_by(region) %>% 
+  select(n_cases, n_deaths) %>% 
+  summarize(mean_n_cases = mean(n_cases, na.rm = TRUE),
+            var_n_cases = var(n_cases, na.rm = TRUE),
+            mean_n_deaths = mean(n_deaths, na.rm = TRUE),
+            var_n_deaths = var(n_deaths, na.rm = TRUE), n = n())
+```
+
+And as in `SQL`, in `tidyverse`, there are also functions that make joining two tibbles possible. From the [documentation page](https://dplyr.tidyverse.org/reference/mutate-joins.html), we have `inner_join()`, `left_join`, `right_join()` and `full_join()`. As an example, consider the following data set, which shows the (fake) mean temperature (in Celsius) in almost all regions and studied months in Saudi Arabia. Assuming the previous data set is in `data`, 
+
+```{r}
+set.seed(0)
+n <- (nrow(data) - 3)
+new_data <- tibble(id = 1:n, date = data$date[1:n], region = data$region[1:n], temperature = round(rnorm(n, 30, 2), 1))
+```
+
+Notice that there is a column named `id` on `new_data`. We will need it to link the new tibble to the old one. Thus, let's create a similar column in `data`.
+
+```{r}
+data <- data %>% add_column(id = 1:(nrow(data))) %>% select(c(7, 1:6))
+head(data, 1)
+```
+
+Now, we can incorporate the new data into the original tibble by using, for example, the `left_join()` function.
+
+```{r}
+data %>% left_join(new_data %>% select(id, temperature), by = 'id') %>% 
+  tail(1)
+```
+
+# Main Section
+
+For this section, from the original data set, create an object that contains the columns `date`, `region`, `n_men`, `n_women`, `n_cases`, and `n_deaths`, such that `n_men` and `n_women` correspond to the number of men and the number of women, respectively (to do this, recall that `men_prop` represents the proportion of men in the population for a given region).
+
+```{r}
+data <- data %>% mutate(women_prop = 1 - men_prop) %>%
+          mutate(n_men = pop * men_prop) %>% 
+          mutate(n_women = pop * women_prop) %>% 
+          select(date, region, n_men, n_women, n_cases, n_deaths)
+head(data, 7)
+```
+
+Now, the main goal is visualize the studied data set. To do this, we will mainly rely on the `ggplot2` library, which is also included in the `tidyverse` universe.
+
+Start by creating a line chart for the number of cases in each region (all in the same plot) over the months (When I tried to plot it in my `RMarkdown` document, I had problems with the `Ha’il` name. If the same happens to you, try to replace it by `Hail`.). Map `region` to `color`.
+
+```{r}
+data <- data %>% mutate(region = replace(region, region == 'Ha’il', 'Hail'))
+```
+
+```{r}
+ggplot(data = data, 
+       mapping = aes(x = date, y = n_cases, color = region)) + 
+  geom_line() +
+  theme_bw() + 
+  labs(x = 'Date', y = 'Number of Cases', color = 'Region') + 
+  theme(text = element_text(family = 'LM Roman 10'))
+```
+
+When plotting, we can also map more than one property at a time. For instance, plot a dot chart for the number of cases in each region over months that maps `region` to `color` and `n_deaths` to `size`.
+
+```{r}
+ggplot(data = data, 
+       mapping = aes(x = date, y = n_cases, size = n_deaths, color = region)) + 
+  geom_point() +
+  theme_bw() + 
+  labs(x = 'Date', y = 'Number of Cases', color = 'Region', size = 'N. Deaths') + 
+  theme(text = element_text(family = 'LM Roman 10'))
+```
+
+Now, using the function `rollmean()` from the `zoo` package, plot the number of cases in Mecca (notice that you will have to filter your data set) over time and the moving average (with window $\text{k} = 3$) of the same time series.
+
+```{r}
+ggplot(data = data, 
+       mapping = aes(x = date, y = n_cases)) + 
+  geom_line(data = . %>% filter(region == 'Mecca'), aes(color = 'light_red')) +
+  geom_line(data = . %>% filter(region == 'Mecca'),
+            aes(y = rollmean(x = n_cases, 
+                             k = 3, 
+                             align = 'right', 
+                             fill = NA),
+                color = 'solid_red')) + 
+  theme_bw() + 
+  labs(x = 'Date', y = 'Number of Cases', 
+       title = 'Number of cases in Mecca (with moving average for k = 3)') + 
+  scale_color_manual(name = 'Number of cases (Mecca)',
+                      values = c('light_red' = alpha('red', 0.25),
+                                 'solid_red' = alpha('red', 1.00)),
+                      labels = c('Original data', 'Moving average')) +
+  theme(text = element_text(family = 'LM Roman 10'))
+```
+
+Now, we will plot the map of Saudi Arabia divided into the given regions. To do this, we will need to work with a `shapefile` for the boundaries of the Kingdom. This type of file may be found online. However, there are some `R` packages that provide such data. For instance, we can use the `geoboundaries('Saudi Arabia', adm\_lvl = 'adm1')` function from the `rgeoboundaries` package to obtain the desired data set.
+
+After downloading the data, you can plot it using the `ggplot(data) + geom_sf()` functions (Depending on what you are trying to do, you may have to install (and load) the `sp` and/or `sf` libraries.).
+
+```{r}
+KSA_shape <- geoboundaries('Saudi Arabia', adm_lvl = 'adm1')
+KSA_shape$shapeName <- data$region[1:13]
+
+ggplot(data = KSA_shape) + 
+  geom_sf() + 
+  geom_sf_label(aes(label = shapeName)) +
+  theme_bw() + 
+  labs(x = 'Longitude', y = 'Latitude', title = 'Map of Saudi Arabia') + 
+  theme(text = element_text(family = 'LM Roman 10'))
+```
+
+As a final task, plot two versions of the above map side-by-side. On the left, the colors should represent the population size for men in each region; similarly, on the right, the population size for women (To combine plots in this way, you may want to use the `patchwork` package. And for different colour palettes, you may use the `viridis` package.). Use the same scale, so that the values are comparable.
+
+```{r}
+KSA_shape$n_men <- data$n_men[1:13]
+KSA_shape$n_women <- data$n_women[1:13]
+
+min_pop = 0      # min(c(KSA_shape$n_men, KSA_shape$n_women))
+max_pop = 5e+06  # max(c(KSA_shape$n_men, KSA_shape$n_women))
+
+men <- ggplot(data = KSA_shape) + 
+       geom_sf(aes(fill = n_men)) + 
+       scale_fill_viridis(limits = c(min_pop, max_pop), name = 'Population',
+                          option = 'plasma') + 
+       geom_sf_label(aes(label = shapeName)) + 
+       theme_bw() + 
+       labs(x = 'Longitude', y = 'Latitude', 
+            title = 'Population in Saudi Arabia (Male)') + 
+       theme(text = element_text(family = 'LM Roman 10'))
+
+women <- ggplot(data = KSA_shape) + 
+         geom_sf(aes(fill = n_women)) +
+         scale_fill_viridis(limits = c(min_pop, max_pop), name = 'Population',
+                            option = 'plasma') + 
+         geom_sf_label(aes(label = shapeName)) +
+         theme_bw() + 
+         labs(x = 'Longitude', y = 'Latitude',
+              title = 'Population in Saudi Arabia (Female)') + 
+         theme(text = element_text(family = 'LM Roman 10'))
+
+combined <- men + women  + plot_layout(guides = 'collect', ncol = 1) &
+              theme(legend.position = 'right', legend.key.height = unit(3, 'cm'))
+
+print(combined)
+```
+
