@@ -132,8 +132,8 @@ $$
 $$
 we can say that
 
-* The expected log count for a one-unit increase in `math` is $0.070$. This represents a $100 \cdot (e^{0.070} - 1) = 7.2\%$ increase in the rewards rate. 
-* The expected log count for "Academic program" (in comparison to the "General program") increases in $1.085$. This represents a $100 \cdot (e^{1.085} - 1) = 195.9\%$ increase in the rewards rate.
+* The expected log count for a one-unit increase in `math` is $0.070$.
+* The expected log count for "Academic program" (in comparison to the "General program") increases in $1.085$.
 
 Finally, we can also plot the expected number of awards grouped by `program`.
 
