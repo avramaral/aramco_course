@@ -377,22 +377,11 @@ div.tocify {
 
 <div id="objectives" class="section level1 unnumbered">
 <h1 class="unnumbered">Objectives</h1>
-<p>In this case study, we will fit a multiple linear regression model.
-However, different than <a href="./case_study_04.html">before</a>, we
-will work with more variables. To do so, we will check for correlation
-among covariates, see how to perform variable selection, fit a model,
-check the assumptions, interpret it, and predict (and plot) new values
-based on this fitted model. When in higher dimension, visualization is
-difficult (and unnecessary for most cases).</p>
+<p>In this case study, we will fit a multiple linear regression model. However, different than <a href="./case_study_04.html">before</a>, we will work with more variables. To do so, we will check for correlation among covariates, see how to perform variable selection, fit a model, check the assumptions, interpret it, and predict (and plot) new values based on this fitted model. When in higher dimension, visualization is difficult (and unnecessary for most cases).</p>
 </div>
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>For this problem, we will analyse a data set with 6 variable (1
-response variable + 6 covariates). Although their meaning may not be
-stated, we will see how important feature selection is when performing
-multiple regression analysis. You can download the <code>.csv</code>
-file <a href="./datasets/data.csv">here</a>. The data set contains the
-following variables:</p>
+<p>For this problem, we will analyse a data set with 6 variable (1 response variable + 6 covariates). Although their meaning may not be stated, we will see how important feature selection is when performing multiple regression analysis. You can download the <code>.csv</code> file <a href="./datasets/data.csv">here</a>. The data set contains the following variables:</p>
 <ol style="list-style-type: decimal">
 <li><code>var1</code> (quantitative)</li>
 <li><code>var2</code> (quantitative)</li>
@@ -404,12 +393,8 @@ following variables:</p>
 </ol>
 </div>
 <div id="exploring-the-data-set" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Exploring the data
-set</h1>
-<p>In order to explore the data set and perform initial analyses, we
-have to read it (with <code>R</code>) first. Provided that the
-<code>.csv</code> file is saved within the <code>datasets/</code>
-folder, one can read the file in the following way.</p>
+<h1><span class="header-section-number">2</span> Exploring the data set</h1>
+<p>In order to explore the data set and perform initial analyses, we have to read it (with <code>R</code>) first. Provided that the <code>.csv</code> file is saved within the <code>datasets/</code> folder, one can read the file in the following way.</p>
 <pre class="r"><code>col.names &lt;- c(&#39;var1&#39;, &#39;var2&#39;, &#39;var3&#39;, &#39;var4&#39;, &#39;var5&#39;, &#39;var6&#39;, &#39;response&#39;)
 data &lt;- read.csv(file = &#39;datasets/data.csv&#39;, header = FALSE, sep = &#39;,&#39;, col.names = col.names)
 head(data, 5)</code></pre>
@@ -435,40 +420,21 @@ head(data, 5)</code></pre>
 ##  Mean   :4.709   Mean   :75.77   Mean   :252.8  
 ##  3rd Qu.:6.493   3rd Qu.:81.05   3rd Qu.:270.3  
 ##  Max.   :9.055   Max.   :90.00   Max.   :298.0</code></pre>
-<p>There are no missing values so that we can jump in into the
-exploratory analyses. However, since we want to use most information
-from this data set, it is not easy to visualize how
-<code>strength</code> can be written as a function of more than two
-variables at the same time. But it might be useful to see how variables
-are correlated. To do this, we can use the
-<code>scatterplotMatrix()</code> function from the <code>car</code>
-package, and the <code>corrplot.mixed()</code> function from the
-<code>corrplot</code> package.</p>
+<p>There are no missing values so that we can jump in into the exploratory analyses. However, since we want to use most information from this data set, it is not easy to visualize how <code>strength</code> can be written as a function of more than two variables at the same time. But it might be useful to see how variables are correlated. To do this, we can use the <code>scatterplotMatrix()</code> function from the <code>car</code> package, and the <code>corrplot.mixed()</code> function from the <code>corrplot</code> package.</p>
 <pre class="r"><code>library(&#39;car&#39;)
 
 scatterplotMatrix(data)</code></pre>
 <p><img src="case_study_05_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<p>Specially when there are too many variables or too many data points
-per plot, it might be difficult to analyse all the details, but from the
-above plot we can have a rough idea on how each variable can be written
-as a function of others.</p>
+<p>Specially when there are too many variables or too many data points per plot, it might be difficult to analyse all the details, but from the above plot we can have a rough idea on how each variable can be written as a function of others.</p>
 <pre class="r"><code>library(&#39;corrplot&#39;)
 
 corrplot.mixed(cor(data))</code></pre>
 <p><img src="case_study_05_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<p>However, from the above plot we may have clearer information about
-the correlation between pair of variables. For instance,
-<code>var1</code> and <code>var3</code> are highly correlated, as well
-as <code>var5</code> and <code>var6</code>, <code>var5</code> and
-<code>response</code>, and <code>var6</code> and <code>response</code>.
-This information can help us having an idea on which attributes better
-explain the dependent variable.</p>
+<p>However, from the above plot we may have clearer information about the correlation between pair of variables. For instance, <code>var1</code> and <code>var3</code> are highly correlated, as well as <code>var5</code> and <code>var6</code>, <code>var5</code> and <code>response</code>, and <code>var6</code> and <code>response</code>. This information can help us having an idea on which attributes better explain the dependent variable.</p>
 </div>
 <div id="fitting-a-model" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Fitting a model</h1>
-<p>Our very first task will be fitting a model with all variables so
-that we can try to explain how the response variable relates to the
-covariates. We can do this in the following way.</p>
+<p>Our very first task will be fitting a model with all variables so that we can try to explain how the response variable relates to the covariates. We can do this in the following way.</p>
 <pre class="r"><code>model &lt;- lm(formula = response ~ ., data = data)
 summary(model)</code></pre>
 <pre><code>## 
@@ -494,12 +460,7 @@ summary(model)</code></pre>
 ## Residual standard error: 0.8177 on 17 degrees of freedom
 ## Multiple R-squared:  0.9992, Adjusted R-squared:  0.9989 
 ## F-statistic:  3540 on 6 and 17 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>From the above summary table, we may see two covariates that might
-not be significant, namely <code>var3</code>, <code>var4</code>, and
-<code>var6</code>. As we prefer simpler models over more complex models,
-provided they have the same performance, let’s remove the one with the
-highest p-value first (<code>var4</code>). We can do this using the
-<code>update()</code> function.</p>
+<p>From the above summary table, we may see two covariates that might not be significant, namely <code>var3</code>, <code>var4</code>, and <code>var6</code>. As we prefer simpler models over more complex models, provided they have the same performance, let’s remove the one with the highest p-value first (<code>var4</code>). We can do this using the <code>update()</code> function.</p>
 <pre class="r"><code>model2 &lt;- update(model, ~. - var4)
 summary(model2)</code></pre>
 <pre><code>## 
@@ -548,22 +509,7 @@ summary(model3)</code></pre>
 ## Residual standard error: 0.8474 on 19 degrees of freedom
 ## Multiple R-squared:  0.999,  Adjusted R-squared:  0.9988 
 ## F-statistic:  4944 on 4 and 19 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>Although <code>var6</code> has a p-value of <code>0.0276</code> and
-we already know that it is highly correlated with <code>var5</code>,
-let’s keep it for now. However, in order to have sufficiently simpler
-models, we can also compute and analyse the Variance Inflation Factor
-(VIF), which is a <strong>measure of the amount of multicollinearity in
-a set of multiple regression variables</strong>. According to <a
-href="https://www.investopedia.com/terms/v/variance-inflation-factor.asp">this
-page</a> <em>the VIF for a regression model variable is equal to the
-ratio of the overall model variance to the variance of a model that
-includes only that single independent variable. This ratio is calculated
-for each independent variable. A high VIF indicates that the associated
-independent variable is highly collinear with the other variables in the
-model</em>. Also, as a rule of thumb, we can exclude variables with VIF
-greater than 2, provided we do this for one variable at a time. To do
-this, we can use the <code>vif()</code> function from the
-<code>car</code> package.</p>
+<p>Although <code>var6</code> has a p-value of <code>0.0276</code> and we already know that it is highly correlated with <code>var5</code>, let’s keep it for now. However, in order to have sufficiently simpler models, we can also compute and analyse the Variance Inflation Factor (VIF), which is a <strong>measure of the amount of multicollinearity in a set of multiple regression variables</strong>. According to <a href="https://www.investopedia.com/terms/v/variance-inflation-factor.asp">this page</a> <em>the VIF for a regression model variable is equal to the ratio of the overall model variance to the variance of a model that includes only that single independent variable. This ratio is calculated for each independent variable. A high VIF indicates that the associated independent variable is highly collinear with the other variables in the model</em>. Also, as a rule of thumb, we can exclude variables with VIF greater than 2, provided we do this for one variable at a time. To do this, we can use the <code>vif()</code> function from the <code>car</code> package.</p>
 <pre class="r"><code>vif(model3)</code></pre>
 <pre><code>##       var1       var2       var5       var6 
 ##   1.740913  44.823922 211.048276 271.824355</code></pre>
@@ -593,14 +539,7 @@ vif(model4)</code></pre>
 ## Residual standard error: 0.9416 on 20 degrees of freedom
 ## Multiple R-squared:  0.9988, Adjusted R-squared:  0.9986 
 ## F-statistic:  5337 on 3 and 20 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>Alternatively, we can do this model selection procedure according to
-another criteria, namely Akaike Information Criterion (AIC), which is
-used for evaluating how well a model fits the data it was generated
-from. AIC is used to compare different possible models and determine
-which one is the best fit for the data <a
-href="https://www.scribbr.com/statistics/akaike-information-criterion/">(reference)</a>.
-In <code>R</code>, we can use the <code>stepAIC()</code> function from
-the <code>MASS</code> package to automatize this procedure.</p>
+<p>Alternatively, we can do this model selection procedure according to another criteria, namely Akaike Information Criterion (AIC), which is used for evaluating how well a model fits the data it was generated from. AIC is used to compare different possible models and determine which one is the best fit for the data <a href="https://www.scribbr.com/statistics/akaike-information-criterion/">(reference)</a>. In <code>R</code>, we can use the <code>stepAIC()</code> function from the <code>MASS</code> package to automatize this procedure.</p>
 <pre class="r"><code>library(&#39;MASS&#39;)
 
 (modelAIC &lt;- stepAIC(model, direction = &#39;both&#39;))</code></pre>
@@ -660,11 +599,7 @@ the <code>MASS</code> package to automatize this procedure.</p>
 <pre class="r"><code>vif(modelAIC)</code></pre>
 <pre><code>##       var1       var2       var3       var5       var6 
 ##   7.366028  49.794159   6.922008 216.948426 279.464063</code></pre>
-<p>However, notice that <code>stepAIC()</code> only removed
-<code>var4</code>, and when we compute the VIF, we see that we can still
-have problems with multicollinearity (which might generate high variance
-of the estimated coefficients). Now, removing the variables with high
-VIF, we have</p>
+<p>However, notice that <code>stepAIC()</code> only removed <code>var4</code>, and when we compute the VIF, we see that we can still have problems with multicollinearity (which might generate high variance of the estimated coefficients). Now, removing the variables with high VIF, we have</p>
 <pre class="r"><code>modelAIC2 &lt;- update(modelAIC, ~. - var6)
 vif(modelAIC2)</code></pre>
 <pre><code>##     var1     var2     var3     var5 
@@ -673,18 +608,11 @@ vif(modelAIC2)</code></pre>
 vif(modelAIC3)</code></pre>
 <pre><code>##     var1     var2     var5 
 ## 1.004377 1.012391 1.008489</code></pre>
-<p>Which is the same model as before. We will take this as our minimal
-model.</p>
-<p>However, we still have to do a residual analysis. For doing this, we
-will do the “Residuals vs Fitted” and “Normal Q-Q” plots and run the
-appropriate tests, as before.</p>
+<p>Which is the same model as before. We will take this as our minimal model.</p>
+<p>However, we still have to do a residual analysis. For doing this, we will do the “Residuals vs Fitted” and “Normal Q-Q” plots and run the appropriate tests, as before.</p>
 <pre class="r"><code>plot(model4, which = c(1, 2))</code></pre>
 <p><img src="case_study_05_files/figure-html/unnamed-chunk-12-1.png" width="672" /><img src="case_study_05_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
-<p>From the plots, the assumptions of equal variance and normality for
-the residuals seem to hold. However, as fewer data points make the
-visual analysis difficult, it is also important to run the tests,
-namely, <code>ncvTest()</code> and <code>shapiro.test()</code> for the
-residuals (<code>resid()</code>).</p>
+<p>From the plots, the assumptions of equal variance and normality for the residuals seem to hold. However, as fewer data points make the visual analysis difficult, it is also important to run the tests, namely, <code>ncvTest()</code> and <code>shapiro.test()</code> for the residuals (<code>resid()</code>).</p>
 <pre class="r"><code>ncvTest(model4)</code></pre>
 <pre><code>## Non-constant Variance Score Test 
 ## Variance formula: ~ fitted.values 
@@ -695,25 +623,15 @@ residuals (<code>resid()</code>).</p>
 ## 
 ## data:  resid(model4)
 ## W = 0.93153, p-value = 0.1055</code></pre>
-<p>From the tests results, we fail to reject the null hypotheses—meaning
-that there is no evidence from the data that the assumptions of equal
-variance and normality for the residuals do not hold.</p>
+<p>From the tests results, we fail to reject the null hypotheses—meaning that there is no evidence from the data that the assumptions of equal variance and normality for the residuals do not hold.</p>
 <p>Our final model is</p>
 <p><span class="math display">\[\begin{align*}
-\texttt{response}_i &amp;= -5.495 + 0.125\texttt{var1}_i +
-2.039\texttt{var2}_i + 9.975\texttt{var5}_i
+\texttt{response}_i &amp;= -5.495 + 0.125\texttt{var1}_i + 2.039\texttt{var2}_i + 9.975\texttt{var5}_i
 \end{align*}\]</span></p>
 </div>
 <div id="predicting-unknown-values" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Predicting unknown
-values</h1>
-<p>Now that we have a “good” fitted model, we can predict the value of
-<code>response</code> for new values of <code>var1</code>,
-<code>var2</code>, and <code>var5</code>. For instance, we can predict
-the value of <code>response</code>, such that <code>var1</code>,
-<code>var2</code> and <code>var5</code> are equal to 55, 100, and 70,
-respectively. We can also include a confidence and a prediction
-interval.</p>
+<h1><span class="header-section-number">4</span> Predicting unknown values</h1>
+<p>Now that we have a “good” fitted model, we can predict the value of <code>response</code> for new values of <code>var1</code>, <code>var2</code>, and <code>var5</code>. For instance, we can predict the value of <code>response</code>, such that <code>var1</code>, <code>var2</code> and <code>var5</code> are equal to 55, 100, and 70, respectively. We can also include a confidence and a prediction interval.</p>
 <pre class="r"><code>newdata &lt;- data.frame(var1 = 55, var2 = 100, var5 = 70)
 
 (pred1 &lt;- predict(object = model4, newdata = newdata, interval = &#39;confidence&#39;))</code></pre>

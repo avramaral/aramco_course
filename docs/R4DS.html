@@ -377,10 +377,7 @@ div.tocify {
 
 <div id="objectives" class="section level1 unnumbered">
 <h1 class="unnumbered">Objectives</h1>
-<p>In this tutorial session, we will see how to read, manipulate and
-visualize data. The main reference for this session is the <a
-href="https://r4ds.had.co.nz/">R for Data Science</a> book, which is
-freely available online.</p>
+<p>In this tutorial session, we will see how to read, manipulate and visualize data. The main reference for this session is the <a href="https://r4ds.had.co.nz/">R for Data Science</a> book, which is freely available online.</p>
 </div>
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
@@ -391,27 +388,8 @@ library(zoo)
 library(rgeoboundaries)
 library(patchwork)
 library(viridis)</code></pre>
-<p>Throughout the tutorial, consider the following scenario. Let <span
-class="math inline">\(\{y_{it}; i = 1, \cdots, I; t = 1, \cdots,
-T\}\)</span> denotes a multivariate time series of disease counts in
-each Saudi Arabia region, such that <span class="math inline">\(I =
-13\)</span> refers to the number of considered regions and <span
-class="math inline">\(T = 36\)</span> to the length of the time series.
-In particular, we will model <span
-class="math inline">\(Y_{it}|Y_{i,(t-1)} = y_{i,(t-1)} \sim
-\text{Poisson}(\lambda_{it})\)</span>, such that <span
-class="math inline">\(\log(\lambda_{it}) = \beta_0 + e_{i} + \beta_1
-\cdot t + \beta_2 \cdot \sin(\omega t) + \beta_3 \cdot \cos(\omega
-t)\)</span>, where <span class="math inline">\(e_i\)</span> corresponds
-to the population fraction in region <span
-class="math inline">\(i\)</span> and <span class="math inline">\(\omega
-= 2\pi / 12\)</span>. Also, we have information about the population
-size and proportion of men in each region, as well as the number of
-deaths linked to each element of the <span
-class="math inline">\(\{y_{it}\}_{it}\)</span> series.</p>
-<p>You can download the <code>.csv</code> file <a
-href="./datasets/r4ds.csv">here</a>. And you read the file and convert
-it to a <code>tibble</code> object in the following way</p>
+<p>Throughout the tutorial, consider the following scenario. Let <span class="math inline">\(\{y_{it}; i = 1, \cdots, I; t = 1, \cdots, T\}\)</span> denotes a multivariate time series of disease counts in each Saudi Arabia region, such that <span class="math inline">\(I = 13\)</span> refers to the number of considered regions and <span class="math inline">\(T = 36\)</span> to the length of the time series. In particular, we will model <span class="math inline">\(Y_{it}|Y_{i,(t-1)} = y_{i,(t-1)} \sim \text{Poisson}(\lambda_{it})\)</span>, such that <span class="math inline">\(\log(\lambda_{it}) = \beta_0 + e_{i} + \beta_1 \cdot t + \beta_2 \cdot \sin(\omega t) + \beta_3 \cdot \cos(\omega t)\)</span>, where <span class="math inline">\(e_i\)</span> corresponds to the population fraction in region <span class="math inline">\(i\)</span> and <span class="math inline">\(\omega = 2\pi / 12\)</span>. Also, we have information about the population size and proportion of men in each region, as well as the number of deaths linked to each element of the <span class="math inline">\(\{y_{it}\}_{it}\)</span> series.</p>
+<p>You can download the <code>.csv</code> file <a href="./datasets/r4ds.csv">here</a>. And you read the file and convert it to a <code>tibble</code> object in the following way</p>
 <pre class="r"><code>data &lt;- readr::read_csv(file = &#39;datasets/r4ds.csv&#39;)</code></pre>
 <pre><code>## Rows: 468 Columns: 6
 ## ── Column specification ────────────────────────────────────────────────────────
@@ -431,19 +409,12 @@ it to a <code>tibble</code> object in the following way</p>
 ## 3 2018-01-01 Northern Borders      30  320524    0.666        6
 ## 4 2018-01-01 Ha’il                 36  597144    0.601        3
 ## 5 2018-01-01 Riyadh                38 6777146    0.559        6</code></pre>
-<p>The code to generated such a data set can be found <a
-href="./datasets/codeR.R">here</a>.</p>
+<p>The code to generated such a data set can be found <a href="./datasets/codeR.R">here</a>.</p>
 </div>
 <div id="data-manipulation" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Data manipulation</h1>
-<p>Now, to manipulate our data set, we will use the <code>dplyr</code>
-package. From , we can see that there are 5 main methods, namely,
-<code>mutate()</code>, <code>select()</code>, <code>filter()</code>,
-<code>summarise()</code>, and <code>arrange()</code>.</p>
-<p>Start by selecting the <code>date</code>, <code>region</code>, and
-<code>n_cases</code> from our original data set. To do this, use the
-pipe operator <code>%&gt;%</code> (in <code>RStudio</code>, you may use
-the shortcut <code>Ctrl + Shift + M</code>).</p>
+<p>Now, to manipulate our data set, we will use the <code>dplyr</code> package. From , we can see that there are 5 main methods, namely, <code>mutate()</code>, <code>select()</code>, <code>filter()</code>, <code>summarise()</code>, and <code>arrange()</code>.</p>
+<p>Start by selecting the <code>date</code>, <code>region</code>, and <code>n_cases</code> from our original data set. To do this, use the pipe operator <code>%&gt;%</code> (in <code>RStudio</code>, you may use the shortcut <code>Ctrl + Shift + M</code>).</p>
 <pre class="r"><code>data %&gt;% select(date, region, n_cases) %&gt;% head(3)</code></pre>
 <pre><code>## # A tibble: 3 × 3
 ##   date       region           n_cases
@@ -454,9 +425,7 @@ the shortcut <code>Ctrl + Shift + M</code>).</p>
 <pre class="r"><code># Alternatively, 
 # data %&gt;% select(-pop, -men_prop, -n_deaths) %&gt;% head(3)
 # data %&gt;% select(date:n_cases) %&gt;% head(3)</code></pre>
-<p>Using <code>?tidyselect::select_helpers</code>, one may find useful
-functions that can be combined with <code>select()</code>. For instance,
-select all columns that start with “<code>n_</code>”.</p>
+<p>Using <code>?tidyselect::select_helpers</code>, one may find useful functions that can be combined with <code>select()</code>. For instance, select all columns that start with “<code>n_</code>”.</p>
 <pre class="r"><code>data %&gt;% select(starts_with(&#39;n_&#39;)) %&gt;% head(3)</code></pre>
 <pre><code>## # A tibble: 3 × 2
 ##   n_cases n_deaths
@@ -464,10 +433,7 @@ select all columns that start with “<code>n_</code>”.</p>
 ## 1      33        3
 ## 2      23        1
 ## 3      30        6</code></pre>
-<p>Aiming to obtain more meaningful sliced data sets, use the
-<code>filter()</code> and <code>select()</code> functions to select the
-the dates and regions for which the number of cases is greater than
-40.</p>
+<p>Aiming to obtain more meaningful sliced data sets, use the <code>filter()</code> and <code>select()</code> functions to select the the dates and regions for which the number of cases is greater than 40.</p>
 <pre class="r"><code>data %&gt;% filter(n_cases &gt; 30) %&gt;% select(date, region) %&gt;% head(3)</code></pre>
 <pre><code>## # A tibble: 3 × 2
 ##   date       region 
@@ -475,11 +441,7 @@ the dates and regions for which the number of cases is greater than
 ## 1 2018-01-01 Eastern
 ## 2 2018-01-01 Ha’il  
 ## 3 2018-01-01 Riyadh</code></pre>
-<p>Also, select the date, name of the region, number of cases, and
-number of deaths for which the region is Eastern or Najran
-<code>AND</code> the date is greater than <code>2019-01-01</code> (you
-may want to use the <code>lubridate</code> package to deal with
-dates).</p>
+<p>Also, select the date, name of the region, number of cases, and number of deaths for which the region is Eastern or Najran <code>AND</code> the date is greater than <code>2019-01-01</code> (you may want to use the <code>lubridate</code> package to deal with dates).</p>
 <pre class="r"><code>data %&gt;% filter(region %in% c(&#39;Eastern&#39;, &#39;Najran&#39;), date &gt; ymd(&#39;2019-01-01&#39;)) %&gt;% 
   select(date, region, n_cases, n_deaths) %&gt;% head(3)</code></pre>
 <pre><code>## # A tibble: 3 × 4
@@ -488,11 +450,7 @@ dates).</p>
 ## 1 2019-02-01 Eastern      26        7
 ## 2 2019-02-01 Najran        2        0
 ## 3 2019-03-01 Eastern      83       13</code></pre>
-<p>Now, select the date, name of the region, number of cases, and number
-of deaths for which the number of cases is larger than <code>700</code>
-<code>OR</code> the number of deaths is equal to <code>10</code> and
-arrange, in a descending order for <code>n_cases</code>, the
-results.</p>
+<p>Now, select the date, name of the region, number of cases, and number of deaths for which the number of cases is larger than <code>700</code> <code>OR</code> the number of deaths is equal to <code>10</code> and arrange, in a descending order for <code>n_cases</code>, the results.</p>
 <pre class="r"><code>data %&gt;% filter(n_deaths == 10 | n_cases &gt; 700) %&gt;% 
   select(date, region, n_cases, n_deaths) %&gt;% arrange(desc(n_cases)) %&gt;% head(3)</code></pre>
 <pre><code>## # A tibble: 3 × 4
@@ -501,10 +459,7 @@ results.</p>
 ## 1 2018-05-01 Mecca      792       93
 ## 2 2018-05-01 Riyadh     719      121
 ## 3 2019-05-01 Ha’il       94       10</code></pre>
-<p>Finally, using the <code>mutate()</code> function, create a new
-column into the original data set that shows the cumulative sum for the
-number of deaths (and name it <code>cum_deaths</code>), and select the
-number of deaths and this newly created column.</p>
+<p>Finally, using the <code>mutate()</code> function, create a new column into the original data set that shows the cumulative sum for the number of deaths (and name it <code>cum_deaths</code>), and select the number of deaths and this newly created column.</p>
 <pre class="r"><code>data %&gt;% mutate(cum_deaths = cumsum(n_deaths)) %&gt;% 
   select(ends_with(&#39;deaths&#39;)) %&gt;% head(3)</code></pre>
 <pre><code>## # A tibble: 3 × 2
@@ -513,17 +468,8 @@ number of deaths and this newly created column.</p>
 ## 1        3          3
 ## 2        1          4
 ## 3        6         10</code></pre>
-<p><strong>Remark:</strong> <code>cummin()</code>,
-<code>cummax()</code>, <code>cummean()</code>, <code>lag()</code>, etc.
-are examples of functions that can be used with
-<code>mutate()</code>.</p>
-<p>Using the <code>lag()</code> and <code>drop_na()</code> functions,
-create a new column named <code>n_cases_lag2</code> and another one
-named <code>n_deaths_lag3</code> that are copies of <code>n_cases</code>
-and <code>n_deaths</code> but with lags 2 and 3, respectively. Then,
-drop the rows with <code>NA</code>s in the <code>n_cases_lag2</code>
-column and select all but the <code>date</code> and <code>region</code>
-columns.</p>
+<p><strong>Remark:</strong> <code>cummin()</code>, <code>cummax()</code>, <code>cummean()</code>, <code>lag()</code>, etc. are examples of functions that can be used with <code>mutate()</code>.</p>
+<p>Using the <code>lag()</code> and <code>drop_na()</code> functions, create a new column named <code>n_cases_lag2</code> and another one named <code>n_deaths_lag3</code> that are copies of <code>n_cases</code> and <code>n_deaths</code> but with lags 2 and 3, respectively. Then, drop the rows with <code>NA</code>s in the <code>n_cases_lag2</code> column and select all but the <code>date</code> and <code>region</code> columns.</p>
 <pre class="r"><code>data %&gt;% mutate(n_cases_lag2 = lag(n_cases, 2),
                 n_deaths_lag3 = lag(n_deaths, 3)) %&gt;% 
   drop_na(n_cases_lag2) %&gt;% 
@@ -535,9 +481,7 @@ columns.</p>
 ## 1      30  320524    0.666        6           33            NA
 ## 2      36  597144    0.601        3           23             3
 ## 3      38 6777146    0.559        6           30             1</code></pre>
-<p>Now, the goal is work with the <code>group_by()</code> function. To
-do this, group the data set by region, and select the three first
-columns.</p>
+<p>Now, the goal is work with the <code>group_by()</code> function. To do this, group the data set by region, and select the three first columns.</p>
 <pre class="r"><code>data %&gt;% group_by(region) %&gt;% select(1:3) %&gt;% head(3)</code></pre>
 <pre><code>## # A tibble: 3 × 3
 ## # Groups:   region [3]
@@ -546,10 +490,7 @@ columns.</p>
 ## 1 2018-01-01 Eastern               33
 ## 2 2018-01-01 Najran                23
 ## 3 2018-01-01 Northern Borders      30</code></pre>
-<p>Combining a few different functions, select all but the
-<code>pop</code> column and create a new one (named
-<code>norm_cases</code>) that shows the normalized number of cases by
-date.</p>
+<p>Combining a few different functions, select all but the <code>pop</code> column and create a new one (named <code>norm_cases</code>) that shows the normalized number of cases by date.</p>
 <pre class="r"><code>data %&gt;% group_by(date) %&gt;% 
   mutate(norm_cases = n_cases/sum(n_cases), 
          cumsum = cumsum(norm_cases)) %&gt;% 
@@ -573,10 +514,7 @@ date.</p>
 ## 12 2018-01-01 Jizan                 33    0.386        4     0.0862 0.950 
 ## 13 2018-01-01 Al Jawf               19    0.298        3     0.0496 1     
 ## 14 2018-02-01 Eastern               67    0.403       10     0.0860 0.0860</code></pre>
-<p>Using the <code>summarise()</code> (or <code>summarize()</code>)
-function, get the average and variance for the variables
-<code>n_cases</code> and <code>n_deaths</code>, as well as the total
-number of rows.</p>
+<p>Using the <code>summarise()</code> (or <code>summarize()</code>) function, get the average and variance for the variables <code>n_cases</code> and <code>n_deaths</code>, as well as the total number of rows.</p>
 <pre class="r"><code>data %&gt;% select(n_cases, n_deaths) %&gt;% 
   summarize(mean_n_cases = mean(n_cases, na.rm = TRUE),
             var_n_cases = var(n_cases, na.rm = TRUE),
@@ -586,10 +524,7 @@ number of rows.</p>
 ##   mean_n_cases var_n_cases mean_n_deaths var_n_deaths     n
 ##          &lt;dbl&gt;       &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt; &lt;int&gt;
 ## 1         63.9      11830.          9.76         294.   468</code></pre>
-<p>Notice that the result from the above item is not very impressive,
-but we can combine it with <code>group_by()</code> to get more
-meaningful statistics. For instance, obtain similar results as before,
-but for each region.</p>
+<p>Notice that the result from the above item is not very impressive, but we can combine it with <code>group_by()</code> to get more meaningful statistics. For instance, obtain similar results as before, but for each region.</p>
 <pre class="r"><code>data %&gt;% group_by(region) %&gt;% 
   select(n_cases, n_deaths) %&gt;% 
   summarize(mean_n_cases = mean(n_cases, na.rm = TRUE),
@@ -613,14 +548,7 @@ but for each region.</p>
 ## 11 Qasim                    37.6       3111.          5.28         65.2    36
 ## 12 Riyadh                  126.       30390.         17.1         600.     36
 ## 13 Tabuk                    42.4       4215.          6.92        119.     36</code></pre>
-<p>And as in <code>SQL</code>, in <code>tidyverse</code>, there are also
-functions that make joining two tibbles possible. From the <a
-href="https://dplyr.tidyverse.org/reference/mutate-joins.html">documentation
-page</a>, we have <code>inner_join()</code>, <code>left_join</code>,
-<code>right_join()</code> and <code>full_join()</code>. As an example,
-consider the following data set, which shows the (fake) mean temperature
-(in Celsius) in almost all regions and studied months in Saudi Arabia.
-Assuming the previous data set is in <code>data</code>,</p>
+<p>And as in <code>SQL</code>, in <code>tidyverse</code>, there are also functions that make joining two tibbles possible. From the <a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">documentation page</a>, we have <code>inner_join()</code>, <code>left_join</code>, <code>right_join()</code> and <code>full_join()</code>. As an example, consider the following data set, which shows the (fake) mean temperature (in Celsius) in almost all regions and studied months in Saudi Arabia. Assuming the previous data set is in <code>data</code>,</p>
 <pre class="r"><code>set.seed(0)
 n &lt;- (nrow(data) - 3)
 new_data &lt;- tibble(id = 1:n, date = data$date[1:n], region = data$region[1:n], temperature = round(rnorm(n, 30, 2), 1))
@@ -639,17 +567,14 @@ new_data</code></pre>
 ##  9     9 2018-01-01 Medina                  30  
 ## 10    10 2018-01-01 Qasim                   34.8
 ## # … with 455 more rows</code></pre>
-<p>Notice that there is a column named <code>id</code> on
-<code>new_data</code>. We will need it to link the new tibble to the old
-one. Thus, let’s create a similar column in <code>data</code>.</p>
+<p>Notice that there is a column named <code>id</code> on <code>new_data</code>. We will need it to link the new tibble to the old one. Thus, let’s create a similar column in <code>data</code>.</p>
 <pre class="r"><code>data &lt;- data %&gt;% add_column(id = 1:(nrow(data))) %&gt;% select(c(7, 1:6))
 head(data, 1)</code></pre>
 <pre><code>## # A tibble: 1 × 7
 ##      id date       region  n_cases     pop men_prop n_deaths
 ##   &lt;int&gt; &lt;date&gt;     &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
 ## 1     1 2018-01-01 Eastern      33 4105780    0.403        3</code></pre>
-<p>Now, we can incorporate the new data into the original tibble by
-using, for example, the <code>left_join()</code> function.</p>
+<p>Now, we can incorporate the new data into the original tibble by using, for example, the <code>left_join()</code> function.</p>
 <pre class="r"><code>data %&gt;% left_join(new_data %&gt;% select(id, temperature), by = &#39;id&#39;) %&gt;% 
   tail(1)</code></pre>
 <pre><code>## # A tibble: 1 × 8
@@ -659,17 +584,10 @@ using, for example, the <code>left_join()</code> function.</p>
 </div>
 <div id="data-visualization" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Data visualization</h1>
-<p>For this section, we will use <code>ggplot2</code> to produce
-different plots.</p>
+<p>For this section, we will use <code>ggplot2</code> to produce different plots.</p>
 <div id="data-preparation" class="section level2" number="3.1">
 <h2><span class="header-section-number">3.1</span> Data preparation</h2>
-<p>From the original data set, create an object that contains the
-columns <code>date</code>, <code>region</code>, <code>n_men</code>,
-<code>n_women</code>, <code>n_cases</code>, and <code>n_deaths</code>,
-such that <code>n_men</code> and <code>n_women</code> correspond to the
-number of men and the number of women, respectively (to do this, recall
-that <code>men_prop</code> represents the proportion of men in the
-population for a given region).</p>
+<p>From the original data set, create an object that contains the columns <code>date</code>, <code>region</code>, <code>n_men</code>, <code>n_women</code>, <code>n_cases</code>, and <code>n_deaths</code>, such that <code>n_men</code> and <code>n_women</code> correspond to the number of men and the number of women, respectively (to do this, recall that <code>men_prop</code> represents the proportion of men in the population for a given region).</p>
 <pre class="r"><code>data &lt;- data %&gt;% mutate(women_prop = 1 - men_prop) %&gt;%
           mutate(n_men = pop * men_prop) %&gt;% 
           mutate(n_women = pop * women_prop) %&gt;% 
@@ -688,15 +606,8 @@ head(data, 7)</code></pre>
 </div>
 <div id="plotting" class="section level2" number="3.2">
 <h2><span class="header-section-number">3.2</span> Plotting</h2>
-<p>Now, the main goal is visualize the studied data set. To do this, we
-will mainly rely on the <code>ggplot2</code> library, which is also
-included in the <code>tidyverse</code> universe.</p>
-<p>Start by creating a line chart for the number of cases in each region
-(all in the same plot) over the months (when I tried to plot it in my
-<code>RMarkdown</code> document, I had problems with the
-<code>Ha’il</code> name. If the same happens to you, try to replace it
-by <code>Hail</code>). Map <code>region</code> to
-<code>color</code>.</p>
+<p>Now, the main goal is visualize the studied data set. To do this, we will mainly rely on the <code>ggplot2</code> library, which is also included in the <code>tidyverse</code> universe.</p>
+<p>Start by creating a line chart for the number of cases in each region (all in the same plot) over the months (when I tried to plot it in my <code>RMarkdown</code> document, I had problems with the <code>Ha’il</code> name. If the same happens to you, try to replace it by <code>Hail</code>). Map <code>region</code> to <code>color</code>.</p>
 <pre class="r"><code>data &lt;- data %&gt;% mutate(region = replace(region, region == &#39;Ha’il&#39;, &#39;Hail&#39;))</code></pre>
 <pre class="r"><code>ggplot(data = data, 
        mapping = aes(x = date, y = n_cases, color = region)) + 
@@ -705,10 +616,7 @@ by <code>Hail</code>). Map <code>region</code> to
   labs(x = &#39;Date&#39;, y = &#39;Number of Cases&#39;, color = &#39;Region&#39;) + 
   theme(text = element_text(family = &#39;LM Roman 10&#39;))</code></pre>
 <p><img src="R4DS_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
-<p>When plotting, we can also map more than one property at a time. For
-instance, plot a dot chart for the number of cases in each region over
-months that maps <code>region</code> to <code>color</code> and
-<code>n_deaths</code> to <code>size</code>.</p>
+<p>When plotting, we can also map more than one property at a time. For instance, plot a dot chart for the number of cases in each region over months that maps <code>region</code> to <code>color</code> and <code>n_deaths</code> to <code>size</code>.</p>
 <pre class="r"><code>ggplot(data = data, 
        mapping = aes(x = date, y = n_cases, size = n_deaths, color = region)) + 
   geom_point() +
@@ -716,11 +624,7 @@ months that maps <code>region</code> to <code>color</code> and
   labs(x = &#39;Date&#39;, y = &#39;Number of Cases&#39;, color = &#39;Region&#39;, size = &#39;N. Deaths&#39;) + 
   theme(text = element_text(family = &#39;LM Roman 10&#39;))</code></pre>
 <p><img src="R4DS_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
-<p>Now, using the function <code>rollmean()</code> from the
-<code>zoo</code> package, plot the number of cases in Mecca (notice that
-you will have to filter your data set) over time and the moving average
-(with window <span class="math inline">\(\text{k} = 3\)</span>) of the
-same time series.</p>
+<p>Now, using the function <code>rollmean()</code> from the <code>zoo</code> package, plot the number of cases in Mecca (notice that you will have to filter your data set) over time and the moving average (with window <span class="math inline">\(\text{k} = 3\)</span>) of the same time series.</p>
 <pre class="r"><code>ggplot(data = data, 
        mapping = aes(x = date, y = n_cases)) + 
   geom_line(data = . %&gt;% filter(region == &#39;Mecca&#39;), aes(color = &#39;light_red&#39;)) +
@@ -739,18 +643,8 @@ same time series.</p>
                       labels = c(&#39;Original data&#39;, &#39;Moving average&#39;)) +
   theme(text = element_text(family = &#39;LM Roman 10&#39;))</code></pre>
 <p><img src="R4DS_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
-<p>Now, we will plot the map of Saudi Arabia divided into the given
-regions. To do this, we will need to work with a <code>shapefile</code>
-for the boundaries of the Kingdom. This type of file may be found
-online. However, there are some <code>R</code> packages that provide
-such data. For instance, we can use the
-<code>geoboundaries('Saudi Arabia', adm\_lvl = 'adm1')</code> function
-from the <code>rgeoboundaries</code> package to obtain the desired data
-set.</p>
-<p>After downloading the data, you can plot it using the
-<code>ggplot(data) + geom_sf()</code> functions (depending on what you
-are trying to do, you may have to install (and load) the <code>sp</code>
-and/or <code>sf</code> libraries).</p>
+<p>Now, we will plot the map of Saudi Arabia divided into the given regions. To do this, we will need to work with a <code>shapefile</code> for the boundaries of the Kingdom. This type of file may be found online. However, there are some <code>R</code> packages that provide such data. For instance, we can use the <code>geoboundaries('Saudi Arabia', adm\_lvl = 'adm1')</code> function from the <code>rgeoboundaries</code> package to obtain the desired data set.</p>
+<p>After downloading the data, you can plot it using the <code>ggplot(data) + geom_sf()</code> functions (depending on what you are trying to do, you may have to install (and load) the <code>sp</code> and/or <code>sf</code> libraries).</p>
 <pre class="r"><code>KSA_shape &lt;- geoboundaries(&#39;Saudi Arabia&#39;, adm_lvl = &#39;adm1&#39;)
 KSA_shape$shapeName &lt;- data$region[1:13]
 
@@ -761,13 +655,7 @@ ggplot(data = KSA_shape) +
   labs(x = &#39;Longitude&#39;, y = &#39;Latitude&#39;, title = &#39;Map of Saudi Arabia&#39;) + 
   theme(text = element_text(family = &#39;LM Roman 10&#39;))</code></pre>
 <p><img src="R4DS_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
-<p>As a final task, plot two versions of the above map side-by-side. On
-the left, the colors should represent the population size for men in
-each region; similarly, on the right, the population size for women (to
-combine plots in this way, you may want to use the
-<code>patchwork</code> package. And for different colour palettes, you
-may use the <code>viridis</code> package). Use the same scale, so that
-the values are comparable.</p>
+<p>As a final task, plot two versions of the above map side-by-side. On the left, the colors should represent the population size for men in each region; similarly, on the right, the population size for women (to combine plots in this way, you may want to use the <code>patchwork</code> package. And for different colour palettes, you may use the <code>viridis</code> package). Use the same scale, so that the values are comparable.</p>
 <pre class="r"><code>KSA_shape$n_men &lt;- data$n_men[1:13]
 KSA_shape$n_women &lt;- data$n_women[1:13]
 
